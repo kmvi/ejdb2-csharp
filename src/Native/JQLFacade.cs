@@ -18,7 +18,7 @@ namespace Ejdb2.Native
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
         }
 
-        public EJDB2Handle Init(EJDB2Handle db, string query, string collection)
+        public EJDB2Handle Init(EJDB2Handle db, string query, ref string collection)
         {
             if (db == null)
                 throw new ArgumentNullException(nameof(db));
@@ -35,6 +35,12 @@ namespace Ejdb2.Native
 
                 if (rc != 0)
                     throw new EJDB2Exception(rc, "jql_create2 failed.");
+
+                if (collection == null)
+                {
+                    IntPtr col = _helper.jql_collection(q);
+                    collection = Marshal.PtrToStringAnsi(col);
+                }
 
                 return new EJDB2Handle(q);
             }

@@ -30,6 +30,7 @@ namespace Ejdb2.Native
         ulong jql_get_skip(IntPtr q, out long skip);
         ulong jql_get_limit(IntPtr q, out long limit);
         void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders);
+        IntPtr jql_collection(IntPtr q);
         int ejdb_version_major();
         int ejdb_version_minor();
         int ejdb_version_patch();

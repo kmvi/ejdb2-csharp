@@ -15,18 +15,26 @@ namespace Ejdb2
         private long _skip;
         private bool _explain;
         private StringWriter _explainLog;
+        private string _collection;
 
-        public JQL(EJDB2 db, string query, string collection)
+        private JQL(EJDB2 db, string query, string collection)
         {
             Db = db ?? throw new ArgumentNullException(nameof(db));
             Query = query ?? throw new ArgumentNullException(nameof(query));
-            Collection = collection;
-            _handle = new Lazy<EJDB2Handle>(() => JQLFacade.Instance.Init(Db.Handle, Query, Collection));
+            _collection = collection;
+            _handle = new Lazy<EJDB2Handle>(() => JQLFacade.Instance.Init(Db.Handle, Query, ref _collection));
         }
+
+        internal EJDB2Handle Handle => _handle.Value;
 
         public EJDB2 Db { get; }
         public string Query { get; }
-        public string Collection { get; set; }
+
+        public string Collection
+        {
+            get => _collection;
+            set => _collection = value;
+        }
 
         public JQL WithExplain()
         {
@@ -233,6 +241,19 @@ namespace Ejdb2
                 .Append("collection=").Append(Collection)
                 .Append(']')
                 .ToString();
+
+        public static JQL Create(EJDB2 db, string query, string collection)
+        {
+            var result = new JQL(db, query, collection);
+            result.Initialize();
+            return result;
+        }
+
+        private void Initialize()
+        {
+            EJDB2Handle handle = _handle.Value;
+            GC.KeepAlive(handle);
+        }
 
         private void EnsureNotDisposed()
         {

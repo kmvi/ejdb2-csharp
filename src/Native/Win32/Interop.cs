@@ -142,5 +142,8 @@ namespace Ejdb2.Native.Win32
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern ulong jbl_node_from_json([MarshalAs(UnmanagedType.LPStr)] string json,
             ref JBL_NODE node, ref IWPOOL pool);
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr jql_collection(IntPtr q);
     }
 }

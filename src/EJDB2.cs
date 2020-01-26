@@ -27,7 +27,7 @@ namespace Ejdb2
         public JQL CreateQuery(string query, string collection)
         {
             EnsureNotDisposed();
-            return new JQL(this, query, collection);
+            return JQL.Create(this, query, collection);
         }
 
         public long Put(string collection, string json) => Put(collection, json, 0);

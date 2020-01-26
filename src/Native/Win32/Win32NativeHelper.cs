@@ -48,6 +48,8 @@ namespace Ejdb2.Native.Win32
 
         public ulong jbl_from_json(out IntPtr jblp, string jsonstr) => Interop.jbl_from_json(out jblp, jsonstr);
 
+        public IntPtr jql_collection(IntPtr q) => Interop.jql_collection(q);
+
         public ulong jql_create2(out IntPtr qptr, string coll, string query, jql_create_mode_t mode) => Interop.jql_create2(out qptr, coll, query, mode);
 
         public void jql_destroy(ref IntPtr qptr) => Interop.jql_destroy(ref qptr);
