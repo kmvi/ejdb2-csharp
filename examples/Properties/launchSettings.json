@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "nejdb2.examples": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
