@@ -15,6 +15,7 @@ namespace Ejdb2.Native
         ulong ejdb_put(IntPtr db, string coll, IntPtr jbl, long id);
         ulong ejdb_put_new(IntPtr db, string coll, IntPtr jbl, out long oid);
         void jbl_destroy(ref IntPtr jblp);
+        void jql_destroy(ref IntPtr qptr);
         ulong ejdb_del(IntPtr db, string coll, long id);
         ulong ejdb_get(IntPtr db, string coll, long id, out IntPtr jblp);
         ulong ejdb_rename_collection(IntPtr db, string coll, string new_coll);
@@ -24,6 +25,11 @@ namespace Ejdb2.Native
         ulong ejdb_remove_index(IntPtr db, string coll, string path, ejdb_idx_mode_t mode);
         ulong ejdb_online_backup(IntPtr db, out ulong ts, string target_file);
         ulong ejdb_remove_collection(IntPtr db, string coll);
+        ulong jql_create2(out IntPtr qptr, string coll, string query, jql_create_mode_t mode);
+        IntPtr jql_error(IntPtr q);
+        ulong jql_get_skip(IntPtr q, out long skip);
+        ulong jql_get_limit(IntPtr q, out long limit);
+        void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders);
         int ejdb_version_major();
         int ejdb_version_minor();
         int ejdb_version_patch();

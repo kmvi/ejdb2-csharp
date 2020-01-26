@@ -47,5 +47,17 @@ namespace Ejdb2.Native.Win32
         public void jbl_destroy(ref IntPtr jblp) => Interop.jbl_destroy(ref jblp);
 
         public ulong jbl_from_json(out IntPtr jblp, string jsonstr) => Interop.jbl_from_json(out jblp, jsonstr);
+
+        public ulong jql_create2(out IntPtr qptr, string coll, string query, jql_create_mode_t mode) => Interop.jql_create2(out qptr, coll, query, mode);
+
+        public void jql_destroy(ref IntPtr qptr) => Interop.jql_destroy(ref qptr);
+
+        public IntPtr jql_error(IntPtr q) => Interop.jql_error(q);
+
+        public ulong jql_get_limit(IntPtr q, out long limit) => Interop.jql_get_limit(q, out limit);
+
+        public ulong jql_get_skip(IntPtr q, out long skip) => Interop.jql_get_skip(q, out skip);
+
+        public void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders) => Interop.jql_reset(q, reset_match_cache, reset_placeholders);
     }
 }

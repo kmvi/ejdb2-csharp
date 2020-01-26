@@ -10,13 +10,15 @@ namespace Ejdb2
     {
         private bool _disposed;
         
-        private readonly Lazy<EJDB2Handle> _handle;
+        private readonly Lazy<EJDB2Handle> _handle;        
 
         public EJDB2(EJDB2Options options)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
             _handle = new Lazy<EJDB2Handle>(() => EJDB2Facade.Instance.Open(Options));
         }
+
+        internal EJDB2Handle Handle => _handle.Value;
 
         public EJDB2Options Options { get; }
 

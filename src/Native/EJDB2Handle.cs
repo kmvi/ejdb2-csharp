@@ -13,10 +13,10 @@ namespace Ejdb2.Native
 
         }
 
-        public EJDB2Handle(IntPtr ejdbp)
+        public EJDB2Handle(IntPtr value)
             : this()
         {
-            SetHandle(ejdbp);
+            SetHandle(value);
         }
 
         public override bool IsInvalid => handle == IntPtr.Zero;

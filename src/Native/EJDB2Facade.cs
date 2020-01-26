@@ -9,14 +9,9 @@ namespace Ejdb2.Native
 {
     internal sealed class EJDB2Facade
     {
-        private static readonly Lazy<EJDB2Facade> _instance;
+        private static readonly Lazy<EJDB2Facade> _instance = new Lazy<EJDB2Facade>(Initialize);
 
         private readonly INativeHelper _helper;
-
-        static EJDB2Facade()
-        {
-            _instance = new Lazy<EJDB2Facade>(Initialize, true);
-        }
 
         private EJDB2Facade(INativeHelper helper)
         {
@@ -280,7 +275,7 @@ namespace Ejdb2.Native
             return 0;
         }
 
-        public void GetInfo(SafeHandle handle, TextWriter writer, bool pretty)
+        public void GetInfo(EJDB2Handle handle, TextWriter writer, bool pretty)
         {
             if (handle.IsInvalid)
                 throw new ArgumentException("Invalid DB handle.");
@@ -317,21 +312,7 @@ namespace Ejdb2.Native
 
         private static EJDB2Facade Initialize()
         {
-            INativeHelper helper;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                helper = new Win32NativeHelper();
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                throw new PlatformNotSupportedException(
-                    $"Platform {RuntimeInformation.OSDescription} is not supported.");
-            }
+            INativeHelper helper = NativeHelper.Create();
 
             ulong rc = helper.ejdb_init();
             if (rc != 0)
