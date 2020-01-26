@@ -92,7 +92,7 @@ namespace Ejdb2.Native
             return limit;
         }
 
-        public void SetString(EJDB2Handle jql, int pos, string placeholder, string val, int type)
+        public void SetString(EJDB2Handle jql, int pos, string placeholder, string val, SetStringType type)
         {
             if (jql.IsInvalid)
                 throw new ArgumentException("Invalid JQL handle.");
@@ -100,7 +100,29 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            throw new NotImplementedException();
+            if (val == null)
+                throw new ArgumentNullException(nameof(val));
+
+            IntPtr q = jql.DangerousGetHandle();
+
+            if (type == SetStringType.Json)
+            {
+                throw new NotImplementedException();
+            }
+            else if (type == SetStringType.Regexp)
+            {
+                var str = new String(val.ToCharArray());
+                ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, delegate { }, IntPtr.Zero);
+                if (rc != 0)
+                    throw new EJDB2Exception(rc, "jql_set_regexp2 failed.");
+            }
+            else
+            {
+                var str = new String(val.ToCharArray());
+                ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, delegate { }, IntPtr.Zero);
+                if (rc != 0)
+                    throw new EJDB2Exception(rc, "jql_set_str2 failed.");
+            }
         }
 
         public void SetLong(EJDB2Handle jql, int pos, string placeholder, long val)
@@ -111,7 +133,9 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            throw new NotImplementedException();
+            ulong rc = _helper.jql_set_i64(jql.DangerousGetHandle(), placeholder, pos, val);
+            if (rc != 0)
+                throw new EJDB2Exception(rc, "jql_set_i64 failed.");
         }
 
         public void SetDouble(EJDB2Handle jql, int pos, string placeholder, double val)
@@ -122,7 +146,9 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            throw new NotImplementedException();
+            ulong rc = _helper.jql_set_f64(jql.DangerousGetHandle(), placeholder, pos, val);
+            if (rc != 0)
+                throw new EJDB2Exception(rc, "jql_set_f64 failed.");
         }
 
         public void SetBoolean(EJDB2Handle jql, int pos, string placeholder, bool val)
@@ -133,7 +159,9 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            throw new NotImplementedException();
+            ulong rc = _helper.jql_set_bool(jql.DangerousGetHandle(), placeholder, pos, val);
+            if (rc != 0)
+                throw new EJDB2Exception(rc, "jql_set_bool failed.");
         }
 
         public void SetNull(EJDB2Handle jql, int pos, string placeholder)
@@ -144,16 +172,35 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            throw new NotImplementedException();
+            ulong rc = _helper.jql_set_null(jql.DangerousGetHandle(), placeholder, pos);
+            if (rc != 0)
+                throw new EJDB2Exception(rc, "jql_set_null failed.");
         }
 
-        public void Execute(EJDB2Handle db, EJDB2Handle jql, JQLCallback cp, StringWriter explain)
+        public void Execute(EJDB2Handle db, EJDB2Handle jql, long skip, long limit, JQLCallback cb, StringWriter explain)
         {
             if (db.IsInvalid)
                 throw new ArgumentException("Invalid DB handle.");
 
             if (db.IsClosed)
                 throw new ArgumentException("DB handle is closed.");
+
+            if (jql.IsInvalid)
+                throw new ArgumentException("Invalid JQL handle.");
+
+            if (jql.IsClosed)
+                throw new ArgumentException("JQL handle is closed.");
+
+            var ux = new EJDB_EXEC
+            {
+                db = db.DangerousGetHandle(),
+                q = jql.DangerousGetHandle(),
+                skip = skip > 0 ? skip : 0,
+                limit = limit > 0 ? limit : 0,
+                opaque = IntPtr.Zero, // TODO
+                visitor = IntPtr.Zero, // TODO
+                log = IntPtr.Zero, // TODO
+            };
 
             throw new NotImplementedException();
         }
@@ -190,5 +237,12 @@ namespace Ejdb2.Native
         }
 
         public static JQLFacade Instance => _instance.Value;
+
+        public enum SetStringType
+        {
+            Json,
+            Regexp,
+            Other,
+        }
     }
 }

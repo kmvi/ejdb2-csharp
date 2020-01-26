@@ -87,14 +87,16 @@ namespace Ejdb2
         public JQL SetString(int pos, string val)
         {
             EnsureNotDisposed();
-            JQLFacade.Instance.SetString(_handle.Value, pos, null, val, 0);
+            JQLFacade.Instance.SetString(_handle.Value, pos, null,
+                val, JQLFacade.SetStringType.Other);
             return this;
         }
 
         public JQL SetString(string placeholder, string val)
         {
             EnsureNotDisposed();
-            JQLFacade.Instance.SetString(_handle.Value, 0, placeholder, val, 0);
+            JQLFacade.Instance.SetString(_handle.Value, 0, placeholder,
+                val, JQLFacade.SetStringType.Other);
             return this;
         }
 
@@ -115,28 +117,32 @@ namespace Ejdb2
         public JQL SetJson(int pos, string json)
         {
             EnsureNotDisposed();
-            JQLFacade.Instance.SetString(_handle.Value, pos, null, json, 1);
+            JQLFacade.Instance.SetString(_handle.Value, pos, null,
+                json, JQLFacade.SetStringType.Json);
             return this;
         }
 
         public JQL SetJson(string placeholder, string json)
         {
             EnsureNotDisposed();
-            JQLFacade.Instance.SetString(_handle.Value, 0, placeholder, json, 1);
+            JQLFacade.Instance.SetString(_handle.Value, 0, placeholder,
+                json, JQLFacade.SetStringType.Json);
             return this;
         }
 
         public JQL SetRegexp(int pos, string regexp)
         {
             EnsureNotDisposed();
-            JQLFacade.Instance.SetString(_handle.Value, pos, null, regexp, 1);
+            JQLFacade.Instance.SetString(_handle.Value, pos, null,
+                regexp, JQLFacade.SetStringType.Regexp);
             return this;
         }
 
         public JQL SetRegexp(string placeholder, string regexp)
         {
             EnsureNotDisposed();
-            JQLFacade.Instance.SetString(_handle.Value, 0, placeholder, regexp, 1);
+            JQLFacade.Instance.SetString(_handle.Value, 0, placeholder,
+                regexp, JQLFacade.SetStringType.Regexp);
             return this;
         }
 
@@ -186,14 +192,14 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
-            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, null, _explainLog);
+            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, null, _explainLog);
         }
 
         public void Execute(JQLCallback cb)
         {
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
-            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, cb, _explainLog);
+            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, cb, _explainLog);
         }
 
         public KeyValuePair<long, string> First()
@@ -201,7 +207,7 @@ namespace Ejdb2
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
             var cb = new JQLCallbackWrapper();
-            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, cb.Callback, _explainLog);
+            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, cb.Callback, _explainLog);
             return new KeyValuePair<long, string>(cb.Id, cb.Json);
         }
 

@@ -12,6 +12,8 @@ namespace Ejdb2.Native.Win32
 
         public ulong ejdb_ensure_index(IntPtr db, string coll, string path, ejdb_idx_mode_t mode) => Interop.ejdb_ensure_index(db, coll, path, mode);
 
+        public ulong ejdb_exec(ref EJDB_EXEC ux) => Interop.ejdb_exec(ref ux);
+
         public ulong ejdb_get(IntPtr db, string coll, long id, out IntPtr jblp) => Interop.ejdb_get(db, coll, id, out jblp);
 
         public ulong ejdb_get_meta(IntPtr db, out IntPtr jblp) => Interop.ejdb_get_meta(db, out jblp);
@@ -48,6 +50,8 @@ namespace Ejdb2.Native.Win32
 
         public ulong jbl_from_json(out IntPtr jblp, string jsonstr) => Interop.jbl_from_json(out jblp, jsonstr);
 
+        public ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IWPOOL pool) => Interop.jbl_node_from_json(json, ref node, ref pool);
+
         public IntPtr jql_collection(IntPtr q) => Interop.jql_collection(q);
 
         public ulong jql_create2(out IntPtr qptr, string coll, string query, jql_create_mode_t mode) => Interop.jql_create2(out qptr, coll, query, mode);
@@ -61,5 +65,19 @@ namespace Ejdb2.Native.Win32
         public ulong jql_get_skip(IntPtr q, out long skip) => Interop.jql_get_skip(q, out skip);
 
         public void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders) => Interop.jql_reset(q, reset_match_cache, reset_placeholders);
+
+        public ulong jql_set_bool(IntPtr q, string placeholder, int index, bool val) => Interop.jql_set_bool(q, placeholder, index, val);
+
+        public ulong jql_set_f64(IntPtr q, string placeholder, int index, double val) => Interop.jql_set_f64(q, placeholder, index, val);
+
+        public ulong jql_set_i64(IntPtr q, string placeholder, int index, long val) => Interop.jql_set_i64(q, placeholder, index, val);
+
+        public ulong jql_set_json2(IntPtr q, string placeholder, int index, ref JBL_NODE val, freefn freefn, IntPtr op) => Interop.jql_set_json2(q, placeholder, index, ref val, freefn, op);
+
+        public ulong jql_set_null(IntPtr q, string placeholder, int index) => Interop.jql_set_null(q, placeholder, index);
+
+        public ulong jql_set_regexp2(IntPtr q, string placeholder, int index, string expr, freefn freefn, IntPtr op) => Interop.jql_set_regexp2(q, placeholder, index, expr, freefn, op);
+
+        public ulong jql_set_str2(IntPtr q, string placeholder, int index, string val, freefn freefn, IntPtr op) => Interop.jql_set_str2(q, placeholder, index, val, freefn, op);
     }
 }

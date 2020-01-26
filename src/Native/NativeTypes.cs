@@ -105,6 +105,20 @@ namespace Ejdb2.Native
         public IntPtr next;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct EJDB_EXEC
+    {
+        public IntPtr db;
+        public IntPtr q;
+        public IntPtr visitor;
+        public IntPtr opaque;
+        public long skip;
+        public long limit;
+        public long cnt;
+        public IntPtr log;
+        public IntPtr pool;
+    }
+
     [Flags]
     internal enum iwkv_openflags : byte
     {

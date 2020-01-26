@@ -31,6 +31,15 @@ namespace Ejdb2.Native
         ulong jql_get_limit(IntPtr q, out long limit);
         void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders);
         IntPtr jql_collection(IntPtr q);
+        ulong jql_set_regexp2(IntPtr q, string placeholder, int index, string expr, freefn freefn, IntPtr op);
+        ulong jql_set_str2(IntPtr q, string placeholder, int index, string val, freefn freefn, IntPtr op);
+        ulong jql_set_json2(IntPtr q, string placeholder, int index, ref JBL_NODE val, freefn freefn, IntPtr op);
+        ulong jql_set_i64(IntPtr q, string placeholder, int index, long val);
+        ulong jql_set_f64(IntPtr q, string placeholder, int index, double val);
+        ulong jql_set_bool(IntPtr q, string placeholder, int index, bool val);
+        ulong jql_set_null(IntPtr q, string placeholder, int index);
+        ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IWPOOL pool);
+        ulong ejdb_exec(ref EJDB_EXEC ux);
         int ejdb_version_major();
         int ejdb_version_minor();
         int ejdb_version_patch();

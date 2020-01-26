@@ -145,5 +145,8 @@ namespace Ejdb2.Native.Win32
 
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr jql_collection(IntPtr q);
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_exec([In] ref EJDB_EXEC ux);
     }
 }
