@@ -36,6 +36,12 @@ namespace Ejdb2.Examples
 
             string info = db.GetInfo();
             Console.WriteLine("DB info: {0}", info);
+
+            db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3)
+                .Execute((docId, doc) => {
+                    Console.WriteLine("Found {0}: {1}", docId, doc);
+                    return 1;
+                });
         }
 
         static void Test2()
