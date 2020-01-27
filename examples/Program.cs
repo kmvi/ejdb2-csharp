@@ -153,12 +153,13 @@ namespace Ejdb2.Examples
             Assert(exception.Code == 87001);
             Assert(exception.Message.Contains("@mycoll/[ <---"));
 
-
             long count = db.CreateQuery("@mycoll/* | count").ExecuteScalarInt64();
             Assert(count == 2);
 
             q.WithExplain().Execute();
-            Assert(q.GetExplainLog().Contains("[INDEX] NO [COLLECTOR] PLAIN"));
+            string log = q.GetExplainLog();
+            Console.WriteLine(log);
+            Assert(log.Contains("[INDEX] NO [COLLECTOR] PLAIN"));
 
             json = db.GetInfo();
             Assert(json != null);
@@ -168,7 +169,6 @@ namespace Ejdb2.Examples
             db.EnsureStringIndex("mycoll", "/foo", true);
             json = db.GetInfo();
             Assert(json.Contains("\"indexes\":[{\"ptr\":\"/foo\",\"mode\":5,\"idbf\":0,\"dbid\":5,\"rnum\":2}]"));
-
 
             db.Patch("mycoll", patch, 2);
 

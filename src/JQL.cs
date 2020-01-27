@@ -219,7 +219,7 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
-            return JQLFacade.Instance.ExecuteScalarInt64(Db.Handle, _handle.Value, _explainLog);
+            return JQLFacade.Instance.ExecuteScalarInt64(Db.Handle, _handle.Value, _skip, _limit, _explainLog);
         }
 
         public void Reset()

@@ -259,7 +259,8 @@ namespace Ejdb2.Native
             }
         }
 
-        public long ExecuteScalarInt64(EJDB2Handle db, EJDB2Handle jql, StringWriter explain)
+        public long ExecuteScalarInt64(EJDB2Handle db, EJDB2Handle jql,
+            long skip, long limit, StringWriter explain)
         {
             if (db.IsInvalid)
                 throw new ArgumentException("Invalid DB handle.");
@@ -267,7 +268,51 @@ namespace Ejdb2.Native
             if (db.IsClosed)
                 throw new ArgumentException("DB handle is closed.");
 
-            throw new NotImplementedException();
+            if (jql.IsInvalid)
+                throw new ArgumentException("Invalid JQL handle.");
+
+            if (jql.IsClosed)
+                throw new ArgumentException("JQL handle is closed.");
+
+            IntPtr log = IntPtr.Zero;
+
+            try
+            {
+                if (explain != null)
+                {
+                    log = _helper.iwxstr_new();
+                    if (log == IntPtr.Zero)
+                        throw new InvalidOperationException("iwxstr_new failed.");
+                }
+
+                var ux = new EJDB_EXEC
+                {
+                    db = db.DangerousGetHandle(),
+                    q = jql.DangerousGetHandle(),
+                    skip = skip > 0 ? skip : 0,
+                    limit = limit > 0 ? limit : 0,
+                    opaque = IntPtr.Zero,
+                    visitor = null,
+                    log = log,
+                };
+
+                ulong rc = _helper.ejdb_exec(ref ux);
+                if (rc != 0)
+                    throw new EJDB2Exception(rc, "ejdb_exec failed.");
+
+                if (log != IntPtr.Zero)
+                {
+                    string slog = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(log));
+                    explain.Write(slog);
+                }
+
+                return ux.cnt;
+            }
+            finally
+            {
+                if (log != IntPtr.Zero)
+                    _helper.iwxstr_destroy(log);
+            }
         }
 
         public static JQLFacade Instance => _instance.Value;
