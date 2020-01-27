@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Ejdb2</RootNamespace>
-	<LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
 </Project>
