@@ -13,6 +13,9 @@ namespace Ejdb2.Native
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void freefn(IntPtr ptr, IntPtr op);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate ulong EJDB_EXEC_VISITOR(ref EJDB_EXEC ctx, ref EJDB_DOC doc, out long step);
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct EJDB_OPTS
     {
@@ -90,33 +93,27 @@ namespace Ejdb2.Native
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct IWPOOL
-    {
-        public UIntPtr usiz;
-        public UIntPtr asiz;
-        public IntPtr heap;
-        public IntPtr unit;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct IWPOOL_UNIT
-    {
-        public IntPtr heap;
-        public IntPtr next;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
     internal struct EJDB_EXEC
     {
         public IntPtr db;
         public IntPtr q;
-        public IntPtr visitor;
+        public EJDB_EXEC_VISITOR visitor;
         public IntPtr opaque;
         public long skip;
         public long limit;
         public long cnt;
         public IntPtr log;
         public IntPtr pool;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct EJDB_DOC
+    {
+        public long id;
+        public IntPtr raw;
+        public IntPtr node;
+        public IntPtr next;
+        public IntPtr prev;
     }
 
     [Flags]

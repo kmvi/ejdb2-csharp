@@ -272,7 +272,7 @@ namespace Ejdb2
             public long Id;
             public string Json;
 
-            public uint Callback(uint id, string json)
+            public uint Callback(long id, string json)
             {
                 Id = id;
                 Json = json;

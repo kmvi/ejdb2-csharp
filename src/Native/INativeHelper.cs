@@ -12,6 +12,8 @@ namespace Ejdb2.Native
         ulong ejdb_get_meta(IntPtr handle, out IntPtr jblp);
         ulong jbl_from_json(out IntPtr jblp, string jsonstr);
         ulong jbl_as_json(IntPtr jbl, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
+        ulong jbl_node_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
+        ulong jbl_xstr_json_printer(string data, int size, char ch, int count, IntPtr op);
         ulong ejdb_put(IntPtr db, string coll, IntPtr jbl, long id);
         ulong ejdb_put_new(IntPtr db, string coll, IntPtr jbl, out long oid);
         void jbl_destroy(ref IntPtr jblp);
@@ -31,17 +33,24 @@ namespace Ejdb2.Native
         ulong jql_get_limit(IntPtr q, out long limit);
         void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders);
         IntPtr jql_collection(IntPtr q);
-        ulong jql_set_regexp2(IntPtr q, string placeholder, int index, string expr, freefn freefn, IntPtr op);
-        ulong jql_set_str2(IntPtr q, string placeholder, int index, string val, freefn freefn, IntPtr op);
+        ulong jql_set_regexp2(IntPtr q, string placeholder, int index, IntPtr expr, freefn freefn, IntPtr op);
+        ulong jql_set_str2(IntPtr q, string placeholder, int index, IntPtr val, freefn freefn, IntPtr op);
         ulong jql_set_json2(IntPtr q, string placeholder, int index, ref JBL_NODE val, freefn freefn, IntPtr op);
         ulong jql_set_i64(IntPtr q, string placeholder, int index, long val);
         ulong jql_set_f64(IntPtr q, string placeholder, int index, double val);
         ulong jql_set_bool(IntPtr q, string placeholder, int index, bool val);
         ulong jql_set_null(IntPtr q, string placeholder, int index);
-        ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IWPOOL pool);
+        ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IntPtr pool);
         ulong ejdb_exec(ref EJDB_EXEC ux);
+        UIntPtr jbl_size(IntPtr jbl);
         int ejdb_version_major();
         int ejdb_version_minor();
         int ejdb_version_patch();
+
+        IntPtr iwxstr_new();
+        IntPtr iwxstr_new2(UIntPtr siz);
+        void iwxstr_destroy(IntPtr xstr);
+        UIntPtr iwxstr_size(IntPtr xstr);
+        IntPtr iwxstr_ptr(IntPtr xstr);
     }
 }

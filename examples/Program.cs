@@ -17,6 +17,9 @@ namespace Ejdb2.Examples
 
         static void Test1()
         {
+            if (File.Exists("example.db"))
+                File.Delete("example.db");
+
             var options = new EJDB2Options("example.db");
             options.IWKVOptions.Truncate = true;
 
@@ -37,6 +40,12 @@ namespace Ejdb2.Examples
 
         static void Test2()
         {
+            if (File.Exists("test.db"))
+                File.Delete("test.db");
+
+            if (File.Exists("test-bkp.db"))
+                File.Delete("test-bkp.db");
+
             var options = new EJDB2Options("test.db");
             options.UseWAL = true;
             options.IWKVOptions.Truncate = true;
@@ -97,6 +106,8 @@ namespace Ejdb2.Examples
             Assert(exception != null && exception.Message != null);
             Assert(exception.Code == 86005);
             //Assert(exception.getMessage().contains("JBL_ERROR_PARSE_UNQUOTED_STRING"));
+
+            db.Put("mycoll", "{'foo':'baz'}".Replace('\'', '"'));
 
             var results = new Dictionary<long, string>();
             q.Execute((docId, doc) => {

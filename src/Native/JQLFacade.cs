@@ -111,19 +111,21 @@ namespace Ejdb2.Native
             }
             else if (type == SetStringType.Regexp)
             {
-                var str = new String(val.ToCharArray());
-                ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, delegate { }, IntPtr.Zero);
+                IntPtr str = Marshal.StringToHGlobalAnsi(val);
+                ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
                 if (rc != 0)
                     throw new EJDB2Exception(rc, "jql_set_regexp2 failed.");
             }
             else
             {
-                var str = new String(val.ToCharArray());
-                ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, delegate { }, IntPtr.Zero);
+                IntPtr str = Marshal.StringToHGlobalAnsi(val);
+                ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
                 if (rc != 0)
                     throw new EJDB2Exception(rc, "jql_set_str2 failed.");
             }
         }
+
+        private static void FreeStringMem(IntPtr ptr, IntPtr op) => Marshal.FreeHGlobal(ptr);
 
         public void SetLong(EJDB2Handle jql, int pos, string placeholder, long val)
         {
@@ -177,7 +179,8 @@ namespace Ejdb2.Native
                 throw new EJDB2Exception(rc, "jql_set_null failed.");
         }
 
-        public void Execute(EJDB2Handle db, EJDB2Handle jql, long skip, long limit, JQLCallback cb, StringWriter explain)
+        public void Execute(EJDB2Handle db, EJDB2Handle jql, long skip, long limit,
+            JQLCallback cb, StringWriter explain)
         {
             if (db.IsInvalid)
                 throw new ArgumentException("Invalid DB handle.");
@@ -191,18 +194,49 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            var ux = new EJDB_EXEC
-            {
-                db = db.DangerousGetHandle(),
-                q = jql.DangerousGetHandle(),
-                skip = skip > 0 ? skip : 0,
-                limit = limit > 0 ? limit : 0,
-                opaque = IntPtr.Zero, // TODO
-                visitor = IntPtr.Zero, // TODO
-                log = IntPtr.Zero, // TODO
-            };
+            IntPtr log = IntPtr.Zero;
 
-            throw new NotImplementedException();
+            try
+            {
+                if (explain != null)
+                {
+                    log = _helper.iwxstr_new();
+                    if (log == IntPtr.Zero)
+                        throw new InvalidOperationException("iwxstr_new failed.");
+                }
+
+                var ux = new EJDB_EXEC
+                {
+                    db = db.DangerousGetHandle(),
+                    q = jql.DangerousGetHandle(),
+                    skip = skip > 0 ? skip : 0,
+                    limit = limit > 0 ? limit : 0,
+                    opaque = IntPtr.Zero,
+                    visitor = null,
+                    log = log,
+                };
+
+                if (cb != null)
+                {
+                    var visitor = new ExecuteVisitor(_helper, cb);
+                    ux.visitor = visitor.Visitor;
+                }
+
+                ulong rc = _helper.ejdb_exec(ref ux);
+                if (rc != 0)
+                    throw new EJDB2Exception(rc, "ejdb_exec failed.");
+
+                if (log != IntPtr.Zero)
+                {
+                    string slog = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(log));
+                    explain.Write(slog);
+                }
+            }
+            finally
+            {
+                if (log != IntPtr.Zero)
+                    _helper.iwxstr_destroy(log);
+            }
         }
 
         public void Reset(EJDB2Handle jql)
@@ -243,6 +277,62 @@ namespace Ejdb2.Native
             Json,
             Regexp,
             Other,
+        }
+
+        private class ExecuteVisitor
+        {
+            private readonly INativeHelper _helper;
+            private readonly JQLCallback _callback;
+
+            public ExecuteVisitor(INativeHelper helper, JQLCallback callback)
+            {
+                _helper = helper;
+                _callback = callback;
+            }
+
+            public ulong Visitor(ref EJDB_EXEC ctx, ref EJDB_DOC doc, out long step)
+            {
+                ulong rc = 0;
+                IntPtr xstr = IntPtr.Zero;
+                step = 0;
+
+                try
+                {
+                    uint sz = _helper.jbl_size(doc.raw).ToUInt32() * 2;
+                    xstr = _helper.iwxstr_new2(new UIntPtr(sz));
+
+                    if (xstr == IntPtr.Zero)
+                        throw new InvalidOperationException("iwxstr_new2 failed.");
+
+                    if (doc.node != IntPtr.Zero)
+                    {
+                        rc = _helper.jbl_node_as_json(doc.node, _helper.jbl_xstr_json_printer, xstr, jbl_print_flags_t.JBL_PRINT_NONE);
+                        if (rc != 0)
+                            throw new EJDB2Exception(rc, "jbl_node_as_json failed.");
+                    }
+                    else
+                    {
+                        rc = _helper.jbl_as_json(doc.raw, _helper.jbl_xstr_json_printer, xstr, jbl_print_flags_t.JBL_PRINT_NONE);
+                        if (rc != 0)
+                            throw new EJDB2Exception(rc, "jbl_as_json failed.");
+                    }
+
+                    string json = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(xstr));
+                    long llv = _callback(doc.id, json);
+                    step = llv < -2 ? 0 : llv;
+                }
+                catch (Exception)
+                {
+
+                }
+                finally
+                {
+                    if (xstr != IntPtr.Zero)
+                        _helper.iwxstr_destroy(xstr);
+                }
+
+                return rc;
+            }
         }
     }
 }

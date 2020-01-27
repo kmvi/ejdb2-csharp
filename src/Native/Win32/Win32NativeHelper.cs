@@ -44,13 +44,29 @@ namespace Ejdb2.Native.Win32
 
         public int ejdb_version_patch() => Interop.ejdb_version_patch();
 
+        public void iwxstr_destroy(IntPtr xstr) => Interop.iwxstr_destroy(xstr);
+
+        public IntPtr iwxstr_new() => Interop.iwxstr_new();
+
+        public IntPtr iwxstr_new2(UIntPtr siz) => Interop.iwxstr_new2(siz);
+
+        public IntPtr iwxstr_ptr(IntPtr xstr) => Interop.iwxstr_ptr(xstr);
+
+        public UIntPtr iwxstr_size(IntPtr xstr) => Interop.iwxstr_size(xstr);
+
         public ulong jbl_as_json(IntPtr jbl, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf) => Interop.jbl_as_json(jbl, pt, op, pf);
 
         public void jbl_destroy(ref IntPtr jblp) => Interop.jbl_destroy(ref jblp);
 
         public ulong jbl_from_json(out IntPtr jblp, string jsonstr) => Interop.jbl_from_json(out jblp, jsonstr);
 
-        public ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IWPOOL pool) => Interop.jbl_node_from_json(json, ref node, ref pool);
+        public ulong jbl_node_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf) => Interop.jbl_node_as_json(node, pt, op, pf);
+
+        public ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IntPtr pool) => Interop.jbl_node_from_json(json, ref node, ref pool);
+
+        public UIntPtr jbl_size(IntPtr jbl) => Interop.jbl_size(jbl);
+
+        public ulong jbl_xstr_json_printer(string data, int size, char ch, int count, IntPtr op) => Interop.jbl_xstr_json_printer(data, size, ch, count, op);
 
         public IntPtr jql_collection(IntPtr q) => Interop.jql_collection(q);
 
@@ -76,8 +92,8 @@ namespace Ejdb2.Native.Win32
 
         public ulong jql_set_null(IntPtr q, string placeholder, int index) => Interop.jql_set_null(q, placeholder, index);
 
-        public ulong jql_set_regexp2(IntPtr q, string placeholder, int index, string expr, freefn freefn, IntPtr op) => Interop.jql_set_regexp2(q, placeholder, index, expr, freefn, op);
+        public ulong jql_set_regexp2(IntPtr q, string placeholder, int index, IntPtr expr, freefn freefn, IntPtr op) => Interop.jql_set_regexp2(q, placeholder, index, expr, freefn, op);
 
-        public ulong jql_set_str2(IntPtr q, string placeholder, int index, string val, freefn freefn, IntPtr op) => Interop.jql_set_str2(q, placeholder, index, val, freefn, op);
+        public ulong jql_set_str2(IntPtr q, string placeholder, int index, IntPtr val, freefn freefn, IntPtr op) => Interop.jql_set_str2(q, placeholder, index, val, freefn, op);
     }
 }
