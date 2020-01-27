@@ -1,4 +1,4 @@
-# EJDB2 .NET binding
+# EJDB2 .NET binding (work in progress)
 
 Embeddable JSON Database engine http://ejdb.org .NET binding (.NET Standard 2.0).
 
