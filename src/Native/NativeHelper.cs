@@ -18,6 +18,10 @@ namespace Ejdb2.Native
             {
                 throw new NotImplementedException();
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                throw new NotImplementedException();
+            }
 
             throw new PlatformNotSupportedException(
                 $"Platform {RuntimeInformation.OSDescription} is not supported.");

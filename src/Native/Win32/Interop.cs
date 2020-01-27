@@ -151,7 +151,7 @@ namespace Ejdb2.Native.Win32
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern ulong jbl_node_from_json([MarshalAs(UnmanagedType.LPStr)] string json,
-            ref JBL_NODE node, ref IntPtr pool);
+            [Out] out JBL_NODE node, [In] ref IntPtr pool);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr jql_collection(IntPtr q);
@@ -180,6 +180,12 @@ namespace Ejdb2.Native.Win32
 
         [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr iwxstr_ptr(IntPtr xstr);
+
+        [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr iwpool_create(UIntPtr siz);
+
+        [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void iwpool_destroy(IntPtr pool);
 
         #endregion
     }

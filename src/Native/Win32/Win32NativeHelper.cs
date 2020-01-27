@@ -44,6 +44,10 @@ namespace Ejdb2.Native.Win32
 
         public int ejdb_version_patch() => Interop.ejdb_version_patch();
 
+        public IntPtr iwpool_create(UIntPtr siz) => Interop.iwpool_create(siz);
+
+        public void iwpool_destroy(IntPtr pool) => Interop.iwpool_destroy(pool);
+
         public void iwxstr_destroy(IntPtr xstr) => Interop.iwxstr_destroy(xstr);
 
         public IntPtr iwxstr_new() => Interop.iwxstr_new();
@@ -62,7 +66,7 @@ namespace Ejdb2.Native.Win32
 
         public ulong jbl_node_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf) => Interop.jbl_node_as_json(node, pt, op, pf);
 
-        public ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IntPtr pool) => Interop.jbl_node_from_json(json, ref node, ref pool);
+        public ulong jbl_node_from_json(string json, out JBL_NODE node, ref IntPtr pool) => Interop.jbl_node_from_json(json, out node, ref pool);
 
         public UIntPtr jbl_size(IntPtr jbl) => Interop.jbl_size(jbl);
 

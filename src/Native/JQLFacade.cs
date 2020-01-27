@@ -107,25 +107,72 @@ namespace Ejdb2.Native
 
             if (type == SetStringType.Json)
             {
-                throw new NotImplementedException();
+                IntPtr pool = IntPtr.Zero;
+                
+                try
+                {
+                    pool = _helper.iwpool_create((UIntPtr)1024);
+                    if (pool == IntPtr.Zero)
+                        throw new InvalidOperationException("iwpool_create failed.");
+
+                    ulong rc = _helper.jbl_node_from_json(val, out JBL_NODE node, ref pool);
+                    if (rc != 0)
+                        throw new EJDB2Exception(rc, "jbl_node_from_json failed.");
+
+                    rc = _helper.jql_set_json2(q, placeholder, pos, ref node, FreePool, pool);
+                    if (rc != 0)
+                        throw new EJDB2Exception(rc, "jql_set_json2 failed.");
+                }
+                catch (Exception)
+                {
+                    FreePool(pool, IntPtr.Zero);
+                }
             }
             else if (type == SetStringType.Regexp)
             {
-                IntPtr str = Marshal.StringToHGlobalAnsi(val);
-                ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
-                if (rc != 0)
-                    throw new EJDB2Exception(rc, "jql_set_regexp2 failed.");
+                IntPtr str = IntPtr.Zero;
+
+                try
+                {
+                    str = Marshal.StringToHGlobalAnsi(val);
+                    ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
+                    if (rc != 0)
+                        throw new EJDB2Exception(rc, "jql_set_regexp2 failed.");
+                }
+                catch (Exception)
+                {
+                    FreeStringMem(str, IntPtr.Zero);
+                }
             }
             else
             {
-                IntPtr str = Marshal.StringToHGlobalAnsi(val);
-                ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
-                if (rc != 0)
-                    throw new EJDB2Exception(rc, "jql_set_str2 failed.");
+                IntPtr str = IntPtr.Zero;
+
+                try
+                {
+                    str = Marshal.StringToHGlobalAnsi(val);
+                    ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
+                    if (rc != 0)
+                        throw new EJDB2Exception(rc, "jql_set_str2 failed.");
+                }
+                catch (Exception)
+                {
+                    FreeStringMem(str, IntPtr.Zero);
+                }
             }
         }
 
-        private static void FreeStringMem(IntPtr ptr, IntPtr op) => Marshal.FreeHGlobal(ptr);
+        private void FreePool(IntPtr ptr, IntPtr op)
+        {
+            if (ptr != IntPtr.Zero)
+                _helper.iwpool_destroy(ptr);
+        }
+
+        private static void FreeStringMem(IntPtr ptr, IntPtr op)
+        {
+            if (ptr != IntPtr.Zero)
+                Marshal.FreeHGlobal(ptr);
+        }
 
         public void SetLong(EJDB2Handle jql, int pos, string placeholder, long val)
         {

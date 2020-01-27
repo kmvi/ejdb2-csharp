@@ -40,7 +40,7 @@ namespace Ejdb2.Native
         ulong jql_set_f64(IntPtr q, string placeholder, int index, double val);
         ulong jql_set_bool(IntPtr q, string placeholder, int index, bool val);
         ulong jql_set_null(IntPtr q, string placeholder, int index);
-        ulong jbl_node_from_json(string json, ref JBL_NODE node, ref IntPtr pool);
+        ulong jbl_node_from_json(string json, out JBL_NODE node, ref IntPtr pool);
         ulong ejdb_exec(ref EJDB_EXEC ux);
         UIntPtr jbl_size(IntPtr jbl);
         int ejdb_version_major();
@@ -52,5 +52,7 @@ namespace Ejdb2.Native
         void iwxstr_destroy(IntPtr xstr);
         UIntPtr iwxstr_size(IntPtr xstr);
         IntPtr iwxstr_ptr(IntPtr xstr);
+        IntPtr iwpool_create(UIntPtr siz);
+        void iwpool_destroy(IntPtr pool);
     }
 }
