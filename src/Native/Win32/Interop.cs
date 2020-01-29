@@ -167,6 +167,18 @@ namespace Ejdb2.Native.Win32
         #region libiowow
 
         [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong iwlog_register_ecodefn(IWLOG_ECODE_FN fp);
+
+        [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong iwlog_init();
+
+        [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr iwlog_ecode_explained(ulong ecode);
+
+        [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint iwrc_strip_errno([In, Out] ref ulong rc);
+
+        [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr iwxstr_new();
 
         [DllImport(IowowLibName, CallingConvention = CallingConvention.Cdecl)]

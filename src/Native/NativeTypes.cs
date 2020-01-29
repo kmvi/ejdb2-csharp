@@ -6,6 +6,9 @@ using System.Text;
 namespace Ejdb2.Native
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    internal delegate string IWLOG_ECODE_FN(IntPtr locale, uint ecode);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     internal delegate ulong jbl_json_printer(
         [MarshalAs(UnmanagedType.LPStr)] string data, int size,
         char ch, int count, IntPtr op);

@@ -44,9 +44,17 @@ namespace Ejdb2.Native.Win32
 
         public int ejdb_version_patch() => Interop.ejdb_version_patch();
 
+        public IntPtr iwlog_ecode_explained(ulong ecode) => Interop.iwlog_ecode_explained(ecode);
+
+        public ulong iwlog_init() => Interop.iwlog_init();
+
+        public ulong iwlog_register_ecodefn(IWLOG_ECODE_FN fp) => Interop.iwlog_register_ecodefn(fp);
+
         public IntPtr iwpool_create(UIntPtr siz) => Interop.iwpool_create(siz);
 
         public void iwpool_destroy(IntPtr pool) => Interop.iwpool_destroy(pool);
+
+        public uint iwrc_strip_errno(ref ulong rc) => Interop.iwrc_strip_errno(ref rc);
 
         public void iwxstr_destroy(IntPtr xstr) => Interop.iwxstr_destroy(xstr);
 

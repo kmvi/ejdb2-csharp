@@ -12,10 +12,12 @@ namespace Ejdb2.Native
         private static readonly Lazy<EJDB2Facade> _instance = new Lazy<EJDB2Facade>(Initialize);
 
         private readonly INativeHelper _helper;
+        private readonly ExceptionHelper _e;
 
         private EJDB2Facade(INativeHelper helper)
         {
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
+            _e = new ExceptionHelper(helper);
         }
 
         public Version GetVersion() => new Version(
@@ -33,7 +35,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.ejdb_open(ref opts, out IntPtr handle);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_open failed.");
+                throw _e.CreateException(rc);
 
             return new EJDB2Handle(handle);
         }
@@ -51,7 +53,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.ejdb_del(handle.DangerousGetHandle(), collection, id);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_del failed.");
+                throw _e.CreateException(rc);
         }
 
         public void Patch(EJDB2Handle handle, string collection, string patch, long id, bool upsert)
@@ -74,13 +76,13 @@ namespace Ejdb2.Native
             {
                 ulong rc = _helper.ejdb_merge_or_put(db, collection, patch, id);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "ejdb_merge_or_put failed.");
+                    throw _e.CreateException(rc);
             }
             else
             {
                 ulong rc = _helper.ejdb_patch(db, collection, patch, id);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "ejdb_patch failed.");
+                    throw _e.CreateException(rc);
             }
         }
 
@@ -102,7 +104,7 @@ namespace Ejdb2.Native
                 oldCollectionName, newCollectionName);
 
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_rename_collection failed.");
+                throw _e.CreateException(rc);
         }
 
         public void RemoveIndex(EJDB2Handle handle, string collection, string path, ejdb_idx_mode_t mode)
@@ -123,7 +125,7 @@ namespace Ejdb2.Native
                 collection, path, mode);
 
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_remove_index failed.");
+                throw _e.CreateException(rc);
         }
 
         public void EnsureIndex(EJDB2Handle handle, string collection, string path, ejdb_idx_mode_t mode)
@@ -144,7 +146,7 @@ namespace Ejdb2.Native
                 collection, path, mode);
 
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_ensure_index failed.");
+                throw _e.CreateException(rc);
         }
 
         public void Get(EJDB2Handle handle, string collection, long id, TextWriter writer, bool pretty)
@@ -164,7 +166,7 @@ namespace Ejdb2.Native
             {
                 ulong rc = _helper.ejdb_get(db, collection, id, out jbl);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "ejdb_get failed.");
+                    throw _e.CreateException(rc);
 
                 var printer = new Printer(writer);
 
@@ -172,7 +174,7 @@ namespace Ejdb2.Native
                     pretty ? jbl_print_flags_t.JBL_PRINT_PRETTY : jbl_print_flags_t.JBL_PRINT_NONE);
 
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "jbl_as_json failed.");
+                    throw _e.CreateException(rc);
 
                 writer.Flush();
             }
@@ -198,7 +200,7 @@ namespace Ejdb2.Native
                 out ulong ts, targetFile);
 
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_online_backup failed.");
+                throw _e.CreateException(rc);
 
             return ts;
         }
@@ -216,7 +218,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.ejdb_remove_collection(handle.DangerousGetHandle(), collection);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_remove_collection failed.");
+                throw _e.CreateException(rc);
         }
 
         public long Put(EJDB2Handle handle, string collection, string json, long id)
@@ -240,19 +242,19 @@ namespace Ejdb2.Native
             {
                 ulong rc = _helper.jbl_from_json(out jbl, json);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "jbl_from_json failed.");
+                    throw _e.CreateException(rc);
 
                 if (id > 0)
                 {
                     rc = _helper.ejdb_put(db, collection, jbl, id);
                     if (rc != 0)
-                        throw new EJDB2Exception(rc, "ejdb_put failed.");
+                        throw _e.CreateException(rc);
                 }
                 else
                 {
                     rc = _helper.ejdb_put_new(db, collection, jbl, out ret);
                     if (rc != 0)
-                        throw new EJDB2Exception(rc, "ejdb_put_new failed.");
+                        throw _e.CreateException(rc);
                 }
 
                 return ret;
@@ -289,7 +291,7 @@ namespace Ejdb2.Native
             {
                 ulong rc = _helper.ejdb_get_meta(db, out jbl);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "jbl_as_json failed.");
+                    throw _e.CreateException(rc);
 
                 var printer = new Printer(writer);
 
@@ -297,7 +299,7 @@ namespace Ejdb2.Native
                     pretty ? jbl_print_flags_t.JBL_PRINT_PRETTY : jbl_print_flags_t.JBL_PRINT_NONE);
 
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "jbl_as_json failed.");
+                    throw _e.CreateException(rc);
 
                 writer.Flush();
             }
@@ -313,10 +315,11 @@ namespace Ejdb2.Native
         private static EJDB2Facade Initialize()
         {
             INativeHelper helper = NativeHelper.Create();
+            var e = new ExceptionHelper(helper);
 
             ulong rc = helper.ejdb_init();
             if (rc != 0)
-                throw new EJDB2Exception(rc, "ejdb_init failed.");
+                throw new InvalidOperationException("ejdb_init failed. Error code: " + rc);
 
             return new EJDB2Facade(helper);
         }

@@ -8,21 +8,24 @@ namespace Ejdb2
     [Serializable]
     public class EJDB2Exception : Exception
     {
-        public EJDB2Exception(ulong code)
+        public EJDB2Exception(ulong code, uint errno)
         {
             Code = code;
+            Errno = errno;
         }
 
-        public EJDB2Exception(ulong code, string message)
+        public EJDB2Exception(ulong code, uint errno, string message)
             : base(message)
         {
             Code = code;
+            Errno = errno;
         }
 
-        public EJDB2Exception(ulong code, string message, Exception innerException)
+        public EJDB2Exception(ulong code, uint errno, string message, Exception innerException)
             : base(message, innerException)
         {
             Code = code;
+            Errno = errno;
         }
 
         protected EJDB2Exception(SerializationInfo info, StreamingContext context)
@@ -32,5 +35,6 @@ namespace Ejdb2
         }
 
         public ulong Code { get; }
+        public uint Errno { get; }
     }
 }

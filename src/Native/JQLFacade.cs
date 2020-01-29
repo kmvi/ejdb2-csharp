@@ -12,10 +12,12 @@ namespace Ejdb2.Native
             new Lazy<JQLFacade>(() => new JQLFacade(NativeHelper.Create()));
 
         private readonly INativeHelper _helper;
+        private readonly ExceptionHelper _e;
 
         private JQLFacade(INativeHelper helper)
         {
             _helper = helper ?? throw new ArgumentNullException(nameof(helper));
+            _e = new ExceptionHelper(helper);
         }
 
         public EJDB2Handle Init(EJDB2Handle db, string query, ref string collection)
@@ -34,7 +36,13 @@ namespace Ejdb2.Native
                     jql_create_mode_t.JQL_KEEP_QUERY_ON_PARSE_ERROR | jql_create_mode_t.JQL_SILENT_ON_PARSE_ERROR);
 
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "jql_create2 failed.");
+                {
+                    string message = null;
+                    if (rc == (ulong)jql_ecode_t.JQL_ERROR_QUERY_PARSE)
+                        message = $"Query parse error: {Marshal.PtrToStringAnsi(_helper.jql_error(q))}";
+                    
+                    throw _e.CreateException(rc, message);
+                }
 
                 if (collection == null)
                 {
@@ -43,15 +51,6 @@ namespace Ejdb2.Native
                 }
 
                 return new EJDB2Handle(q);
-            }
-            catch (EJDB2Exception e) when (q != IntPtr.Zero && e.Code == (ulong)jql_ecode_t.JQL_ERROR_QUERY_PARSE)
-            {
-                var message = $"Query parse error: {Marshal.PtrToStringAnsi(_helper.jql_error(q))}";
-
-                if (q != IntPtr.Zero)
-                    _helper.jql_destroy(ref q);
-
-                throw new EJDB2Exception(e.Code, message, e);
             }
             catch (Exception)
             {
@@ -72,7 +71,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.jql_get_skip(jql.DangerousGetHandle(), out long skip);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "jql_get_skip failed.");
+                throw _e.CreateException(rc);
 
             return skip;
         }
@@ -87,7 +86,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.jql_get_limit(jql.DangerousGetHandle(), out long limit);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "jql_get_limit failed.");
+                throw _e.CreateException(rc);
 
             return limit;
         }
@@ -117,11 +116,11 @@ namespace Ejdb2.Native
 
                     ulong rc = _helper.jbl_node_from_json(val, out JBL_NODE node, ref pool);
                     if (rc != 0)
-                        throw new EJDB2Exception(rc, "jbl_node_from_json failed.");
+                        throw _e.CreateException(rc);
 
                     rc = _helper.jql_set_json2(q, placeholder, pos, ref node, FreePool, pool);
                     if (rc != 0)
-                        throw new EJDB2Exception(rc, "jql_set_json2 failed.");
+                        throw _e.CreateException(rc);
                 }
                 catch (Exception)
                 {
@@ -137,7 +136,7 @@ namespace Ejdb2.Native
                     str = Marshal.StringToHGlobalAnsi(val);
                     ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
                     if (rc != 0)
-                        throw new EJDB2Exception(rc, "jql_set_regexp2 failed.");
+                        throw _e.CreateException(rc);
                 }
                 catch (Exception)
                 {
@@ -153,7 +152,7 @@ namespace Ejdb2.Native
                     str = Marshal.StringToHGlobalAnsi(val);
                     ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
                     if (rc != 0)
-                        throw new EJDB2Exception(rc, "jql_set_str2 failed.");
+                        throw _e.CreateException(rc);
                 }
                 catch (Exception)
                 {
@@ -184,7 +183,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.jql_set_i64(jql.DangerousGetHandle(), placeholder, pos, val);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "jql_set_i64 failed.");
+                throw _e.CreateException(rc);
         }
 
         public void SetDouble(EJDB2Handle jql, int pos, string placeholder, double val)
@@ -197,7 +196,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.jql_set_f64(jql.DangerousGetHandle(), placeholder, pos, val);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "jql_set_f64 failed.");
+                throw _e.CreateException(rc);
         }
 
         public void SetBoolean(EJDB2Handle jql, int pos, string placeholder, bool val)
@@ -210,7 +209,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.jql_set_bool(jql.DangerousGetHandle(), placeholder, pos, val);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "jql_set_bool failed.");
+                throw _e.CreateException(rc);
         }
 
         public void SetNull(EJDB2Handle jql, int pos, string placeholder)
@@ -223,7 +222,7 @@ namespace Ejdb2.Native
 
             ulong rc = _helper.jql_set_null(jql.DangerousGetHandle(), placeholder, pos);
             if (rc != 0)
-                throw new EJDB2Exception(rc, "jql_set_null failed.");
+                throw _e.CreateException(rc);
         }
 
         public void Execute(EJDB2Handle db, EJDB2Handle jql, long skip, long limit,
@@ -271,7 +270,7 @@ namespace Ejdb2.Native
 
                 ulong rc = _helper.ejdb_exec(ref ux);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "ejdb_exec failed.");
+                    throw _e.CreateException(rc);
 
                 if (log != IntPtr.Zero)
                 {
@@ -345,7 +344,7 @@ namespace Ejdb2.Native
 
                 ulong rc = _helper.ejdb_exec(ref ux);
                 if (rc != 0)
-                    throw new EJDB2Exception(rc, "ejdb_exec failed.");
+                    throw _e.CreateException(rc);
 
                 if (log != IntPtr.Zero)
                 {
@@ -375,11 +374,13 @@ namespace Ejdb2.Native
         {
             private readonly INativeHelper _helper;
             private readonly JQLCallback _callback;
+            private readonly ExceptionHelper _e;
 
             public ExecuteVisitor(INativeHelper helper, JQLCallback callback)
             {
                 _helper = helper;
                 _callback = callback;
+                _e = new ExceptionHelper(helper);
             }
 
             public ulong Visitor(ref EJDB_EXEC ctx, ref EJDB_DOC doc, out long step)
@@ -398,24 +399,24 @@ namespace Ejdb2.Native
 
                     if (doc.node != IntPtr.Zero)
                     {
-                        rc = _helper.jbl_node_as_json(doc.node, _helper.jbl_xstr_json_printer, xstr, jbl_print_flags_t.JBL_PRINT_NONE);
+                        rc = _helper.jbl_node_as_json(doc.node, _helper.jbl_xstr_json_printer,
+                            xstr, jbl_print_flags_t.JBL_PRINT_NONE);
+
                         if (rc != 0)
-                            throw new EJDB2Exception(rc, "jbl_node_as_json failed.");
+                            throw _e.CreateException(rc);
                     }
                     else
                     {
-                        rc = _helper.jbl_as_json(doc.raw, _helper.jbl_xstr_json_printer, xstr, jbl_print_flags_t.JBL_PRINT_NONE);
+                        rc = _helper.jbl_as_json(doc.raw, _helper.jbl_xstr_json_printer,
+                            xstr, jbl_print_flags_t.JBL_PRINT_NONE);
+                        
                         if (rc != 0)
-                            throw new EJDB2Exception(rc, "jbl_as_json failed.");
+                            throw _e.CreateException(rc);
                     }
 
                     string json = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(xstr));
                     long llv = _callback(doc.id, json);
                     step = llv < -2 ? 0 : llv;
-                }
-                catch (Exception)
-                {
-
                 }
                 finally
                 {

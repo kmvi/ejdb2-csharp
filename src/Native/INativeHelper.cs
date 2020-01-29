@@ -47,6 +47,10 @@ namespace Ejdb2.Native
         int ejdb_version_minor();
         int ejdb_version_patch();
 
+        ulong iwlog_init();
+        ulong iwlog_register_ecodefn(IWLOG_ECODE_FN fp);
+        IntPtr iwlog_ecode_explained(ulong ecode);
+        uint iwrc_strip_errno(ref ulong rc);
         IntPtr iwxstr_new();
         IntPtr iwxstr_new2(UIntPtr siz);
         void iwxstr_destroy(IntPtr xstr);
