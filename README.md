@@ -37,6 +37,17 @@ static void Main(string[] args)
 
 ## How to build it manually
 
+### Linux
+
+- Build and/or install EJDB2: https://github.com/Softmotions/ejdb#linux
+- Build ejdb2-csharp:
+
+``` cmd
+git clone https://github.com/kmvi/ejdb2-csharp
+cd ejdb2-csharp
+dotnet build
+```
+
 ### Windows
 
 - Clone [ejdb](https://github.com/Softmotions/ejdb) repo
@@ -73,10 +84,6 @@ git clone https://github.com/kmvi/ejdb2-csharp
 cd ejdb2-csharp
 dotnet build
 ```
-
-### Linux
-
-TODO
 
 ## Run example
 
