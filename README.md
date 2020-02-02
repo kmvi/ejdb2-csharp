@@ -37,14 +37,46 @@ static void Main(string[] args)
 
 ## How to build it manually
 
-- Build EJDB2 as a shared library ([guide](https://github.com/Softmotions/ejdb/blob/master/WINDOWS.md))
-- Build iowow as a shared library ([guide](http://iowow.io/iw/win))
+### Windows
+
+- Clone [ejdb](https://github.com/Softmotions/ejdb) repo
+- Apply the patch:
+
+``` diff
+diff --git a/cmake/Modules/AddIOWOW.cmake b/cmake/Modules/AddIOWOW.cmake
+index ce674bc8..ed034e06 100644
+--- a/cmake/Modules/AddIOWOW.cmake
++++ b/cmake/Modules/AddIOWOW.cmake
+@@ -19,13 +19,13 @@ endif()
+ if (IOS)
+   set(BYPRODUCT "${CMAKE_BINARY_DIR}/lib/libiowow-1.a")
+ else()
+-  set(BYPRODUCT "${CMAKE_BINARY_DIR}/src/extern_iowow-build/src/libiowow-1.a")
++  set(BYPRODUCT "${CMAKE_BINARY_DIR}/src/extern_iowow-build/src/libiowow.dll.a")
+ endif()
+
+ set(CMAKE_ARGS  -DOWNER_PROJECT_NAME=${PROJECT_NAME}
+                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                 -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+-                -DBUILD_SHARED_LIBS=OFF
++                -DBUILD_SHARED_LIBS=ON
+                 -DBUILD_EXAMPLES=OFF)
+
+ foreach(extra CMAKE_TOOLCHAIN_FILE
+```
+
+- Build EJDB2 and iowow as shared libraries ([guide](https://github.com/Softmotions/ejdb/blob/master/WINDOWS.md))
+- Build ejdb2-csharp:
 
 ``` cmd
 git clone https://github.com/kmvi/ejdb2-csharp
 cd ejdb2-csharp
 dotnet build
 ```
+
+### Linux
+
+TODO
 
 ## Run example
 

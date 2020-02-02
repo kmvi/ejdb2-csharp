@@ -89,7 +89,7 @@ namespace Ejdb2.Examples
             }
 
             Assert(exception != null);
-            //Assert(exception.Message.Contains("IWKV_ERROR_NOTFOUND"));
+            Assert(exception.Message.Contains("IWKV_ERROR_NOTFOUND"));
 
             // JQL resources can be closed explicitly or garbage collected
             JQL q = db.CreateQuery("@mycoll/*");
@@ -111,7 +111,7 @@ namespace Ejdb2.Examples
 
             Assert(exception != null && exception.Message != null);
             Assert(exception.Code == 86005);
-            //Assert(exception.Message.Contains("JBL_ERROR_PARSE_UNQUOTED_STRING"));
+            Assert(exception.Message.Contains("JBL_ERROR_PARSE_UNQUOTED_STRING"));
 
             db.Put("mycoll", "{'foo':'baz'}".Replace('\'', '"'));
 
