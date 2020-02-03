@@ -1,4 +1,4 @@
-# EJDB2 .NET binding (work in progress)
+# EJDB2 .NET binding
 
 Embeddable JSON Database engine http://ejdb.org .NET binding (.NET Standard 2.0).
 
@@ -33,7 +33,7 @@ static void Main(string[] args)
 ## Supported platforms
 
 * Windows x64
-* TODO: Linux x64
+* Linux x64
 
 ## How to build it manually
 
@@ -76,7 +76,7 @@ index ce674bc8..ed034e06 100644
  foreach(extra CMAKE_TOOLCHAIN_FILE
 ```
 
-- Build EJDB2 and iowow as shared libraries ([guide](https://github.com/Softmotions/ejdb/blob/master/WINDOWS.md))
+- Build both EJDB2 and iowow as shared libraries ([guide](https://github.com/Softmotions/ejdb/blob/master/WINDOWS.md))
 - Build ejdb2-csharp:
 
 ``` cmd
