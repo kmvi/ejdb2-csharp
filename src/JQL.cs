@@ -6,6 +6,26 @@ using Ejdb2.Native;
 
 namespace Ejdb2
 {
+    /// <summary>
+    /// EJDB2 Query specification.
+    /// </summary>
+    /// <remarks>
+    /// <para>Query can be reused multiple times with various placeholder parameters.See
+    /// JQL specification: https://github.com/Softmotions/ejdb/blob/master/README.md#jql</para>
+    /// <para>Memory resources used by JQL instance must be released explicitly by
+    /// <see cref="Ejdb2.JQL.Dispose"/>.</para>
+    /// <para>Note: If user did not close instance explicitly it will be
+    /// freed anyway once jql object will be garbage collected.</para>
+    /// <para>Typical usage:</para>
+    /// <code>
+    /// using (JQL q = db.CreateQuery("/[foo=:val]", "mycoll").SetString("val", "bar")) {
+    ///     q.Execute((docId, doc) => {
+    ///         Console.WriteLine("Found {0} {1}", docId, doc);
+    ///         return 1;
+    ///     });
+    /// }
+    /// </code>
+    /// </remarks>
     public sealed class JQL : IDisposable
     {
         private readonly Lazy<EJDB2Handle> _handle;
@@ -27,21 +47,39 @@ namespace Ejdb2
 
         internal EJDB2Handle Handle => _handle.Value;
 
+        /// <summary>
+        /// Owner database instance
+        /// </summary>
         public EJDB2 Db { get; }
+
+        /// <summary>
+        /// Query specification used to construct this query object
+        /// </summary>
         public string Query { get; }
 
+        /// <summary>
+        /// Collection name used for this query
+        /// </summary>
         public string Collection
         {
             get => _collection;
             set => _collection = value;
         }
 
+        /// <summary>
+        /// Turn on collecting of query execution log. See also <seealso cref="GetExplainLog"/>
+        /// </summary>
+        /// <returns>This object</returns>
         public JQL WithExplain()
         {
             _explain = true;
             return this;
         }
 
+        /// <summary>
+        /// Turn off collecting of query execution log . See also <seealso cref="GetExplainLog"/>
+        /// </summary>
+        /// <returns>This object</returns>
         public JQL WithNoExplain()
         {
             _explain = false;
@@ -50,6 +88,11 @@ namespace Ejdb2
 
         public string GetExplainLog() => _explainLog?.ToString();
 
+        /// <summary>
+        /// Number of records to skip. This parameter takes precedence over <c>skip</c> encoded in query spec.
+        /// </summary>
+        /// <param name="skip">Number of records to skip</param>
+        /// <returns>This object</returns>
         public JQL SetSkip(long skip)
         {
             Skip = skip;
@@ -67,6 +110,12 @@ namespace Ejdb2
             set => _skip = value;
         }
 
+        /// <summary>
+        /// Maximum number of records to retrive. This parameter takes precedence
+        /// over <c>limit</c> encoded in query spec.
+        /// </summary>
+        /// <param name="limit">Maximum number of records to retrive</param>
+        /// <returns>This object</returns>
         public JQL SetLimit(long limit)
         {
             Limit = limit;
@@ -84,6 +133,19 @@ namespace Ejdb2
             set => _limit = value;
         }
 
+        /// <summary>
+        /// Set positional string parameter starting for <c>0</c> index.
+        /// </summary>
+        /// <remarks>
+        /// <para>Example:</para>
+        /// <para><c>
+        /// db.CreateQuery("/[foo=:?]", "mycoll").SetString(0, "zaz")
+        /// </c></para>
+        /// </remarks>
+        /// <param name="pos">Zero based positional index</param>
+        /// <param name="val">Value to set</param>
+        /// <returns>This object</returns>
+        /// <exception cref="EJDB2Exception"></exception>
         public JQL SetString(int pos, string val)
         {
             EnsureNotDisposed();
@@ -92,6 +154,19 @@ namespace Ejdb2
             return this;
         }
 
+        /// <summary>
+        /// Set string parameter placeholder in query spec.
+        /// </summary>
+        /// <remarks>
+        /// <para>Example:</para>
+        /// <para><c>
+        /// db.CreateQuery("/[foo=:val]", "mycoll").SetString("val", "zaz");
+        /// </c></para>
+        /// </remarks>
+        /// <param name="placeholder">Placeholder name</param>
+        /// <param name="val">Value to set</param>
+        /// <returns>This object</returns>
+        /// <exception cref="EJDB2Exception"></exception>
         public JQL SetString(string placeholder, string val)
         {
             EnsureNotDisposed();
@@ -188,6 +263,10 @@ namespace Ejdb2
             return this;
         }
 
+        /// <summary>
+        /// Execute query without result set callback
+        /// </summary>
+        /// <exception cref="EJDB2Exception"></exception>
         public void Execute()
         {
             EnsureNotDisposed();
@@ -195,6 +274,11 @@ namespace Ejdb2
             JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, null, _explainLog);
         }
 
+        /// <summary>
+        /// Execute query and handle records by provided <c>cb</c>
+        /// </summary>
+        /// <param name="cb">Optional callback SAM</param>
+        /// <exception cref="EJDB2Exception"></exception>
         public void Execute(JQLCallback cb)
         {
             EnsureNotDisposed();
@@ -202,6 +286,11 @@ namespace Ejdb2
             JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, cb, _explainLog);
         }
 
+        /// <summary>
+        /// Get first record entry <c>{documentId, json}</c> in results set. Entry will
+        /// contain nulls if no records found.
+        /// </summary>
+        /// <returns></returns>
         public KeyValuePair<long, string> First()
         {
             EnsureNotDisposed();
@@ -211,10 +300,26 @@ namespace Ejdb2
             return new KeyValuePair<long, string>(cb.Id, cb.Json);
         }
 
+        /// <summary>
+        /// Get first document body as JSON string or null
+        /// </summary>
+        /// <returns>Document body</returns>
         public string FirstJson() => First().Value;
 
+        /// <summary>
+        /// Get first document id ot null
+        /// </summary>
+        /// <returns>Document id</returns>
         public long FirstId() => First().Key;
 
+        /// <summary>
+        /// Execute scalar query
+        /// </summary>
+        /// <remarks>
+        /// <para>Example:</para>
+        /// <para><c>long count = db.CreateQuery("@mycoll/* | count").ExecuteScalarInt64(); </c></para>
+        /// </remarks>
+        /// <returns>Scalar result</returns>
         public long ExecuteScalarInt64()
         {
             EnsureNotDisposed();
@@ -222,6 +327,9 @@ namespace Ejdb2
             return JQLFacade.Instance.ExecuteScalarInt64(Db.Handle, _handle.Value, _skip, _limit, _explainLog);
         }
 
+        /// <summary>
+        /// Reset data stored in positional placeholders
+        /// </summary>
         public void Reset()
         {
             EnsureNotDisposed();
@@ -229,6 +337,9 @@ namespace Ejdb2
             JQLFacade.Instance.Reset(_handle.Value);
         }
 
+        /// <summary>
+        /// Close query instance releasing memory resources
+        /// </summary>
         public void Dispose()
         {
             if (!_disposed)
