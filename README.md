@@ -87,9 +87,18 @@ dotnet build
 
 ## Run example
 
-Copy `libejdb2.dll` and `libiowow.dll` in `examples\bin\{Configuration}\netcoreapp2.1` directory.
+Windows only: copy `libejdb2.dll` and `libiowow.dll` in `examples\bin\{Configuration}\netcoreapp3.1` directory.
 
 ``` cmd
 cd examples
 dotnet run
+```
+
+## Run tests
+
+Windows only: copy `libejdb2.dll` and `libiowow.dll` in `tests\bin\{Configuration}\netcoreapp3.1` directory.
+
+``` cmd
+cd tests
+dotnet test
 ```
