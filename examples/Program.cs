@@ -21,8 +21,9 @@ namespace Ejdb2.Examples
             if (File.Exists("example.db"))
                 File.Delete("example.db");
 
-            var options = new EJDB2Options("example.db");
-            options.IWKVOptions.Truncate = true;
+            var options = new EJDB2OptionsBuilder("example.db")
+                .WithWAL().Truncate()
+                .GetOptions();
 
             using var db = new EJDB2(options);
 
@@ -32,8 +33,8 @@ namespace Ejdb2.Examples
             id = db.Put("parrots", "{\"name\":\"Darko\", \"age\": 8}");
             Console.WriteLine("Darko record: {0}", id);
 
-            id = db.Put("parrots", "{\"name\":\"тест 迶逅透進進\", \"age\": 8}");
-            Console.WriteLine("Darko record: {0}", id);
+            id = db.Put("parrots", "{\"name\":\"тест 迶逅透進\", \"age\": 8}");
+            Console.WriteLine("UTF8 test record: {0}", id);
 
             string data = db.Get("parrots", id);
             Console.WriteLine("Record {0} data: {1}", id, data);
@@ -56,9 +57,9 @@ namespace Ejdb2.Examples
             if (File.Exists("test-bkp.db"))
                 File.Delete("test-bkp.db");
 
-            var options = new EJDB2Options("test.db");
-            options.UseWAL = true;
-            options.IWKVOptions.Truncate = true;
+            var options = new EJDB2OptionsBuilder("test.db")
+                .WithWAL().Truncate()
+                .GetOptions();
 
             using var db = new EJDB2(options);
 
@@ -226,8 +227,9 @@ namespace Ejdb2.Examples
             Assert(ts > ts0);
             Assert(File.Exists("test-bkp.db"));
 
-            var options2 = new EJDB2Options("test-bkp.db");
-            options2.UseWAL = true;
+            var options2 = new EJDB2OptionsBuilder("test-bkp.db")
+                .WithWAL()
+                .GetOptions();
 
             using (EJDB2 db2 = new EJDB2(options2))
             {

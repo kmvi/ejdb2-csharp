@@ -11,8 +11,8 @@ For API usage examples take a look into [examples project](https://github.com/km
 ``` csharp
 static void Main(string[] args)
 {
-    var options = new EJDB2Options("example.db");
-    options.IWKVOptions.Truncate = true;
+    var options = new EJDB2OptionsBuilder("example.db")
+        .Truncate().GetOptions();
 
     using var db = new EJDB2(options);
 
