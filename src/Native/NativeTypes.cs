@@ -5,13 +5,8 @@ using System.Text;
 
 namespace Ejdb2.Native
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    internal delegate string IWLOG_ECODE_FN(IntPtr locale, uint ecode);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    internal delegate ulong jbl_json_printer(
-        [MarshalAs(UnmanagedType.LPStr)] string data, int size,
-        char ch, int count, IntPtr op);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate ulong jbl_json_printer(IntPtr data, int size, byte ch, int count, IntPtr op);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void freefn(IntPtr ptr, IntPtr op);
@@ -34,7 +29,9 @@ namespace Ejdb2.Native
     {
         public bool enabled;
         public int port;
+        [MarshalAs(UnmanagedType.LPStr)]
         public string bind;
+        [MarshalAs(UnmanagedType.LPStr)]
         public string access_token;
         public UIntPtr access_token_len;
         public bool blocking;
@@ -45,7 +42,7 @@ namespace Ejdb2.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct IWKV_OPTS
     {
-        public string path;
+        public IntPtr path;
         public uint random_seed;
         public iwkv_openflags oflags;
         public bool file_lock_fail_fast;

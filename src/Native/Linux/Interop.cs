@@ -32,30 +32,27 @@ namespace Ejdb2.Native.Linux
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong ejdb_get_meta([In] IntPtr db, [Out] out IntPtr jblp);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jbl_as_json(IntPtr jbl,
-            [MarshalAs(UnmanagedType.FunctionPtr)] jbl_json_printer pt,
-            IntPtr op, jbl_print_flags_t pf);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jbl_as_json(
+            IntPtr jbl, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong jbl_node_as_json(IntPtr node, jbl_json_printer pt,
-            IntPtr op, jbl_print_flags_t pf);
+        public static extern ulong jbl_node_as_json(
+            IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jbl_from_json([Out] out IntPtr jblp,
-            [MarshalAs(UnmanagedType.LPStr)] string jsonstr);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jbl_from_json([Out] out IntPtr jblp, IntPtr jsonstr);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong jbl_xstr_json_printer(
-            [MarshalAs(UnmanagedType.LPStr)] string data, int size, char ch, int count, IntPtr op);
+            IntPtr data, int size, byte ch, int count, IntPtr op);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_put(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll, IntPtr jbl, long id);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_put(IntPtr db, IntPtr coll, IntPtr jbl, long id);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_put_new(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll, IntPtr jbl, [Out] out long oid);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_put_new(
+            IntPtr db, IntPtr coll, IntPtr jbl, [Out] out long oid);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void jbl_destroy([In, Out] ref IntPtr jblp);
@@ -63,49 +60,43 @@ namespace Ejdb2.Native.Linux
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void jql_destroy([In, Out] ref IntPtr qptr);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_del(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll, long id);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_del(IntPtr db, IntPtr coll, long id);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_get(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll, long id, [Out] out IntPtr jblp);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_get(
+            IntPtr db, IntPtr coll, long id, [Out] out IntPtr jblp);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_rename_collection(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll, [MarshalAs(UnmanagedType.LPStr)] string new_coll);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_rename_collection(
+            IntPtr db, IntPtr coll, IntPtr new_coll);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_merge_or_put(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll,
-            [MarshalAs(UnmanagedType.LPStr)] string patchjson, long id);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_merge_or_put(
+            IntPtr db, IntPtr coll, IntPtr patchjson, long id);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_patch(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll,
-            [MarshalAs(UnmanagedType.LPStr)] string patchjson, long id);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_patch(
+            IntPtr db, IntPtr coll, IntPtr patchjson, long id);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_ensure_index(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll,
-            [MarshalAs(UnmanagedType.LPStr)] string path, ejdb_idx_mode_t mode);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_ensure_index(
+            IntPtr db, IntPtr coll, IntPtr path, ejdb_idx_mode_t mode);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_remove_index(IntPtr db,
-            [MarshalAs(UnmanagedType.LPStr)] string coll,
-            [MarshalAs(UnmanagedType.LPStr)] string path, ejdb_idx_mode_t mode);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_remove_index(
+            IntPtr db, IntPtr coll, IntPtr path, ejdb_idx_mode_t mode);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_online_backup(IntPtr db,
-            [Out] out ulong ts, [MarshalAs(UnmanagedType.LPStr)] string target_file);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_online_backup(
+            IntPtr db, [Out] out ulong ts, IntPtr target_file);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong ejdb_remove_collection(IntPtr db, [MarshalAs(UnmanagedType.LPStr)] string coll);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong ejdb_remove_collection(IntPtr db, IntPtr coll);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jql_create2([Out] out IntPtr qptr,
-            [MarshalAs(UnmanagedType.LPStr)] string coll,
-            [MarshalAs(UnmanagedType.LPStr)] string query, jql_create_mode_t mode);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jql_create2([Out] out IntPtr qptr, IntPtr coll,
+            IntPtr query, jql_create_mode_t mode);
         
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr jql_error(IntPtr q);
@@ -114,42 +105,42 @@ namespace Ejdb2.Native.Linux
         public static extern ulong jql_get_skip(IntPtr q, [Out] out long skip);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void jql_reset(IntPtr q, bool reset_match_cache, bool reset_placeholders);
+        public static extern void jql_reset(
+            IntPtr q, bool reset_match_cache, bool reset_placeholders);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong jql_get_limit(IntPtr q, [Out] out long limit);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jql_set_regexp2(IntPtr q,
-            [MarshalAs(UnmanagedType.LPStr)] string placeholder, int index,
-            IntPtr expr, freefn freefn, IntPtr op);
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jql_set_regexp2(IntPtr q, IntPtr placeholder,
+            int index, IntPtr expr, freefn freefn, IntPtr op);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jql_set_str2(IntPtr q, [MarshalAs(UnmanagedType.LPStr)] string placeholder,
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jql_set_str2(IntPtr q, IntPtr placeholder,
             int index, IntPtr val, freefn freefn, IntPtr op);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jql_set_json2(IntPtr q, [MarshalAs(UnmanagedType.LPStr)] string placeholder,
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jql_set_json2(IntPtr q, IntPtr placeholder,
             int index, ref JBL_NODE val, freefn freefn, IntPtr op);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong jql_set_i64(IntPtr q,
-            [MarshalAs(UnmanagedType.LPStr)] string placeholder, int index, long val);
+            IntPtr placeholder, int index, long val);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong jql_set_f64(IntPtr q,
-            [MarshalAs(UnmanagedType.LPStr)] string placeholder, int index, double val);
+            IntPtr placeholder, int index, double val);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong jql_set_bool(IntPtr q,
-            [MarshalAs(UnmanagedType.LPStr)] string placeholder, int index, bool val);
+            IntPtr placeholder, int index, bool val);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong jql_set_null(IntPtr q,
-            [MarshalAs(UnmanagedType.LPStr)] string placeholder, int index);
+            IntPtr placeholder, int index);
 
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern ulong jbl_node_from_json([MarshalAs(UnmanagedType.LPStr)] string json,
+        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ulong jbl_node_from_json(IntPtr json,
             [Out] out JBL_NODE node, [In] ref IntPtr pool);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
@@ -164,9 +155,6 @@ namespace Ejdb2.Native.Linux
         #endregion
 
         #region libiowow
-
-        [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong iwlog_register_ecodefn(IWLOG_ECODE_FN fp);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
         public static extern ulong iwlog_init();

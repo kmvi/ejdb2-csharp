@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using Ejdb2;
 using static System.Diagnostics.Debug;
 
@@ -29,6 +30,9 @@ namespace Ejdb2.Examples
             Console.WriteLine("Bianca record: {0}", id);
 
             id = db.Put("parrots", "{\"name\":\"Darko\", \"age\": 8}");
+            Console.WriteLine("Darko record: {0}", id);
+
+            id = db.Put("parrots", "{\"name\":\"тест 迶逅透進進\", \"age\": 8}");
             Console.WriteLine("Darko record: {0}", id);
 
             string data = db.Get("parrots", id);
@@ -66,15 +70,17 @@ namespace Ejdb2.Examples
             long id = db.Put("c1", json);
             Assert(id == 1L);
 
-            var bos = new StringWriter();
+            var bos = new MemoryStream();
             db.Get("c1", 1L, bos);
-            Assert(bos.ToString().Equals(json));
+            Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals(json));
+            bos.Dispose();
 
             db.Patch("c1", patch, id);
-            bos = new StringWriter();
+            bos = new MemoryStream();
             db.Get("c1", 1L, bos);
-            Assert(bos.ToString().Equals("{'foo':'bar','baz':'qux'}".Replace('\'', '"')));
-            bos = new StringWriter();
+            Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals("{'foo':'bar','baz':'qux'}".Replace('\'', '"')));
+            bos.Dispose();
+            bos = new MemoryStream();
 
             db.Delete("c1", id);
 
@@ -90,6 +96,7 @@ namespace Ejdb2.Examples
 
             Assert(exception != null);
             Assert(exception.Message.Contains("IWKV_ERROR_NOTFOUND"));
+            bos.Dispose();
 
             // JQL resources can be closed explicitly or garbage collected
             JQL q = db.CreateQuery("@mycoll/*");
@@ -116,7 +123,8 @@ namespace Ejdb2.Examples
             db.Put("mycoll", "{'foo':'baz'}".Replace('\'', '"'));
 
             var results = new Dictionary<long, string>();
-            q.Execute((docId, doc) => {
+            q.Execute((docId, doc) =>
+            {
                 Assert(docId > 0 && doc != null);
                 results.Add(docId, doc);
                 return 1;
@@ -127,8 +135,10 @@ namespace Ejdb2.Examples
             Assert(results[2L] == "{\"foo\":\"baz\"}");
             results.Clear();
 
-            using (JQL q2 = db.CreateQuery("/[foo=:?]", "mycoll").SetString(0, "zaz")) {
-                q2.Execute((docId, doc) => {
+            using (JQL q2 = db.CreateQuery("/[foo=:?]", "mycoll").SetString(0, "zaz"))
+            {
+                q2.Execute((docId, doc) =>
+                {
                     results.Add(docId, doc);
                     return 1;
                 });
@@ -136,8 +146,10 @@ namespace Ejdb2.Examples
 
             Assert(results.Count == 0);
 
-            using (JQL q2 = db.CreateQuery("/[foo=:val]", "mycoll").SetString("val", "bar")) {
-                q2.Execute((docId, doc) => {
+            using (JQL q2 = db.CreateQuery("/[foo=:val]", "mycoll").SetString("val", "bar"))
+            {
+                q2.Execute((docId, doc) =>
+                {
                     results.Add(docId, doc);
                     return 1;
                 });
@@ -197,11 +209,12 @@ namespace Ejdb2.Examples
             Assert(json.Contains("\"collections\":[]"));
 
             // Test rename collection
-            bos = new StringWriter();
+            bos = new MemoryStream();
             db.Put("cc1", "{\"foo\": 1}");
             db.RenameCollection("cc1", "cc2");
             db.Get("cc2", 1, bos);
-            Assert(bos.ToString().Equals("{\"foo\":1}"));
+            Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals("{\"foo\":1}"));
+            bos.Dispose();
 
             // Check limit
             q = db.CreateQuery("@mycoll/* | limit 2 skip 3");
@@ -216,7 +229,8 @@ namespace Ejdb2.Examples
             var options2 = new EJDB2Options("test-bkp.db");
             options2.UseWAL = true;
 
-            using (EJDB2 db2 = new EJDB2(options2)) {
+            using (EJDB2 db2 = new EJDB2(options2))
+            {
                 string val = db2["cc2", 1];
                 Assert(val.Equals("{\"foo\":1}"));
             }

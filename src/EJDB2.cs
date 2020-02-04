@@ -136,17 +136,17 @@ namespace Ejdb2
         /// </summary>
         /// <param name="collection"></param>
         /// <param name="id"></param>
-        /// <param name="writer"></param>
+        /// <param name="stream"></param>
         /// <param name="prettify"></param>
         /// <returns>Document</returns>
         /// <exception cref="EJDB2Exception">
         /// If document is not found EJDB2Exception will be thrown: code: 75001,
         /// message: Key not found. (IWKV_ERROR_NOTFOUND)
         /// </exception>
-        public void Get(string collection, long id, TextWriter writer, bool prettify = false)
+        public void Get(string collection, long id, Stream stream, bool prettify = false)
         {
             EnsureNotDisposed();
-            EJDB2Facade.Instance.Get(_handle.Value, collection, id, writer, prettify);
+            EJDB2Facade.Instance.Get(_handle.Value, collection, id, stream, prettify);
         }
 
         /// <summary>
@@ -177,10 +177,10 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
 
-            using var writer = new StringWriter();
-            EJDB2Facade.Instance.Get(_handle.Value, collection, id, writer, false);
+            using var stream = new MemoryStream();
+            EJDB2Facade.Instance.Get(_handle.Value, collection, id, stream, false);
 
-            return writer.ToString();
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
 
         /// <summary>
@@ -212,12 +212,12 @@ namespace Ejdb2
         ///   }
         /// </code>
         /// </remarks>
-        /// <param name="writer">Text writer to write the document</param>
+        /// <param name="stream">Stream to write the document</param>
         /// <exception cref="EJDB2Exception"></exception>
-        public void GetInfo(TextWriter writer)
+        public void GetInfo(Stream stream)
         {
             EnsureNotDisposed();
-            EJDB2Facade.Instance.GetInfo(_handle.Value, writer, false);
+            EJDB2Facade.Instance.GetInfo(_handle.Value, stream, false);
         }
 
         /// <summary>
@@ -230,10 +230,10 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
 
-            using var writer = new StringWriter();
-            EJDB2Facade.Instance.GetInfo(_handle.Value, writer, false);
+            using var stream = new MemoryStream();
+            EJDB2Facade.Instance.GetInfo(_handle.Value, stream, false);
 
-            return writer.ToString();
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
 
         /// <summary>

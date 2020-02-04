@@ -32,14 +32,18 @@ namespace Ejdb2.Native
 
             try
             {
-                ulong rc = _helper.jql_create2(out q, collection, query,
-                    jql_create_mode_t.JQL_KEEP_QUERY_ON_PARSE_ERROR | jql_create_mode_t.JQL_SILENT_ON_PARSE_ERROR);
+                ulong rc;
+                using (var pool = new Utf8StringPool())
+                {
+                    rc = _helper.jql_create2(out q, pool.GetString(collection), pool.GetString(query),
+                        jql_create_mode_t.JQL_KEEP_QUERY_ON_PARSE_ERROR | jql_create_mode_t.JQL_SILENT_ON_PARSE_ERROR);
+                }
 
                 if (rc != 0)
                 {
                     string message = null;
                     if (rc == (ulong)jql_ecode_t.JQL_ERROR_QUERY_PARSE)
-                        message = $"Query parse error: {Marshal.PtrToStringAnsi(_helper.jql_error(q))}";
+                        message = $"Query parse error: {Utf8String.FromIntPtr(_helper.jql_error(q))}";
                     
                     throw _e.CreateException(rc, message);
                 }
@@ -47,7 +51,7 @@ namespace Ejdb2.Native
                 if (collection == null)
                 {
                     IntPtr col = _helper.jql_collection(q);
-                    collection = Marshal.PtrToStringAnsi(col);
+                    collection = Utf8String.FromIntPtr(col);
                 }
 
                 return new EJDB2Handle(q);
@@ -114,13 +118,16 @@ namespace Ejdb2.Native
                     if (pool == IntPtr.Zero)
                         throw new InvalidOperationException("iwpool_create failed.");
 
-                    ulong rc = _helper.jbl_node_from_json(val, out JBL_NODE node, ref pool);
-                    if (rc != 0)
-                        throw _e.CreateException(rc);
+                    using (var spool = new Utf8StringPool())
+                    {
+                        ulong rc = _helper.jbl_node_from_json(spool.GetString(val), out JBL_NODE node, ref pool);
+                        if (rc != 0)
+                            throw _e.CreateException(rc);
 
-                    rc = _helper.jql_set_json2(q, placeholder, pos, ref node, FreePool, pool);
-                    if (rc != 0)
-                        throw _e.CreateException(rc);
+                        rc = _helper.jql_set_json2(q, spool.GetString(placeholder), pos, ref node, FreePool, pool);
+                        if (rc != 0)
+                            throw _e.CreateException(rc);
+                    }
                 }
                 catch (Exception)
                 {
@@ -133,8 +140,13 @@ namespace Ejdb2.Native
 
                 try
                 {
-                    str = Marshal.StringToHGlobalAnsi(val);
-                    ulong rc = _helper.jql_set_regexp2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
+                    ulong rc;
+                    using (var ph = new Utf8String(placeholder))
+                    {
+                        str = Utf8String.CreateUnmanaged(val);
+                        rc = _helper.jql_set_regexp2(q, ph, pos, str, FreeStringMem, IntPtr.Zero);
+                    }
+
                     if (rc != 0)
                         throw _e.CreateException(rc);
                 }
@@ -149,8 +161,13 @@ namespace Ejdb2.Native
 
                 try
                 {
-                    str = Marshal.StringToHGlobalAnsi(val);
-                    ulong rc = _helper.jql_set_str2(q, placeholder, pos, str, FreeStringMem, IntPtr.Zero);
+                    ulong rc;
+                    using (var ph = new Utf8String(placeholder))
+                    {
+                        str = Utf8String.CreateUnmanaged(val);
+                        rc = _helper.jql_set_str2(q, ph, pos, str, FreeStringMem, IntPtr.Zero);
+                    }
+
                     if (rc != 0)
                         throw _e.CreateException(rc);
                 }
@@ -181,7 +198,12 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            ulong rc = _helper.jql_set_i64(jql.DangerousGetHandle(), placeholder, pos, val);
+            ulong rc;
+            using (var ph = new Utf8String(placeholder))
+            {
+                rc = _helper.jql_set_i64(jql.DangerousGetHandle(), ph, pos, val);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
@@ -194,7 +216,12 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            ulong rc = _helper.jql_set_f64(jql.DangerousGetHandle(), placeholder, pos, val);
+            ulong rc;
+            using (var ph = new Utf8String(placeholder))
+            {
+                rc = _helper.jql_set_f64(jql.DangerousGetHandle(), ph, pos, val);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
@@ -207,7 +234,12 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            ulong rc = _helper.jql_set_bool(jql.DangerousGetHandle(), placeholder, pos, val);
+            ulong rc;
+            using (var ph = new Utf8String(placeholder))
+            {
+                rc = _helper.jql_set_bool(jql.DangerousGetHandle(), ph, pos, val);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
@@ -220,7 +252,12 @@ namespace Ejdb2.Native
             if (jql.IsClosed)
                 throw new ArgumentException("JQL handle is closed.");
 
-            ulong rc = _helper.jql_set_null(jql.DangerousGetHandle(), placeholder, pos);
+            ulong rc;
+            using (var ph = new Utf8String(placeholder))
+            {
+                rc = _helper.jql_set_null(jql.DangerousGetHandle(), ph, pos);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
@@ -274,7 +311,7 @@ namespace Ejdb2.Native
 
                 if (log != IntPtr.Zero)
                 {
-                    string slog = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(log));
+                    string slog = Utf8String.FromIntPtr(_helper.iwxstr_ptr(log));
                     explain.Write(slog);
                 }
             }
@@ -348,7 +385,7 @@ namespace Ejdb2.Native
 
                 if (log != IntPtr.Zero)
                 {
-                    string slog = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(log));
+                    string slog = Utf8String.FromIntPtr(_helper.iwxstr_ptr(log));
                     explain.Write(slog);
                 }
 
@@ -392,7 +429,7 @@ namespace Ejdb2.Native
                 try
                 {
                     uint sz = _helper.jbl_size(doc.raw).ToUInt32() * 2;
-                    xstr = _helper.iwxstr_new2(new UIntPtr(sz));
+                    xstr = _helper.iwxstr_new2((UIntPtr)sz);
 
                     if (xstr == IntPtr.Zero)
                         throw new InvalidOperationException("iwxstr_new2 failed.");
@@ -414,7 +451,7 @@ namespace Ejdb2.Native
                             throw _e.CreateException(rc);
                     }
 
-                    string json = Marshal.PtrToStringAnsi(_helper.iwxstr_ptr(xstr));
+                    string json = Utf8String.FromIntPtr(_helper.iwxstr_ptr(xstr));
                     long llv = _callback(doc.id, json);
                     step = llv < -2 ? 0 : llv;
                 }

@@ -31,9 +31,15 @@ namespace Ejdb2.Native
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
 
-            EJDB_OPTS opts = MapOptions(options);
+            IntPtr handle;
+            ulong rc;
 
-            ulong rc = _helper.ejdb_open(ref opts, out IntPtr handle);
+            using (var pool = new Utf8StringPool())
+            {
+                EJDB_OPTS opts = MapOptions(options, pool);
+                rc = _helper.ejdb_open(ref opts, out handle);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
 
@@ -51,7 +57,12 @@ namespace Ejdb2.Native
             if (collection == null)
                 throw new ArgumentNullException(nameof(collection));
 
-            ulong rc = _helper.ejdb_del(handle.DangerousGetHandle(), collection, id);
+            ulong rc;
+            using (var col = new Utf8String(collection))
+            {
+                rc = _helper.ejdb_del(handle.DangerousGetHandle(), col, id);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
@@ -72,18 +83,16 @@ namespace Ejdb2.Native
 
             IntPtr db = handle.DangerousGetHandle();
 
-            if (upsert)
+            ulong rc;
+            using (var pool = new Utf8StringPool())
             {
-                ulong rc = _helper.ejdb_merge_or_put(db, collection, patch, id);
-                if (rc != 0)
-                    throw _e.CreateException(rc);
+                rc = upsert
+                    ? _helper.ejdb_merge_or_put(db, pool.GetString(collection), pool.GetString(patch), id)
+                    : _helper.ejdb_patch(db, pool.GetString(collection), pool.GetString(patch), id);
             }
-            else
-            {
-                ulong rc = _helper.ejdb_patch(db, collection, patch, id);
-                if (rc != 0)
-                    throw _e.CreateException(rc);
-            }
+
+            if (rc != 0)
+                throw _e.CreateException(rc);
         }
 
         public void RenameCollection(EJDB2Handle handle, string oldCollectionName, string newCollectionName)
@@ -100,8 +109,12 @@ namespace Ejdb2.Native
             if (newCollectionName == null)
                 throw new ArgumentNullException(nameof(newCollectionName));
 
-            ulong rc = _helper.ejdb_rename_collection(handle.DangerousGetHandle(),
-                oldCollectionName, newCollectionName);
+            ulong rc;
+            using (var pool = new Utf8StringPool())
+            {
+                rc = _helper.ejdb_rename_collection(handle.DangerousGetHandle(),
+                    pool.GetString(oldCollectionName), pool.GetString(newCollectionName));
+            }
 
             if (rc != 0)
                 throw _e.CreateException(rc);
@@ -121,8 +134,12 @@ namespace Ejdb2.Native
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
 
-            ulong rc = _helper.ejdb_remove_index(handle.DangerousGetHandle(),
-                collection, path, mode);
+            ulong rc;
+            using (var pool = new Utf8StringPool())
+            {
+                rc = _helper.ejdb_remove_index(handle.DangerousGetHandle(),
+                        pool.GetString(collection), pool.GetString(path), mode);
+            }
 
             if (rc != 0)
                 throw _e.CreateException(rc);
@@ -142,14 +159,18 @@ namespace Ejdb2.Native
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
 
-            ulong rc = _helper.ejdb_ensure_index(handle.DangerousGetHandle(),
-                collection, path, mode);
+            ulong rc;
+            using (var pool = new Utf8StringPool())
+            {
+                rc = _helper.ejdb_ensure_index(handle.DangerousGetHandle(),
+                        pool.GetString(collection), pool.GetString(path), mode);
+            }
 
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
 
-        public void Get(EJDB2Handle handle, string collection, long id, TextWriter writer, bool pretty)
+        public void Get(EJDB2Handle handle, string collection, long id, Stream stream, bool pretty)
         {
             if (handle.IsInvalid)
                 throw new ArgumentException("Invalid DB handle.");
@@ -164,11 +185,16 @@ namespace Ejdb2.Native
 
             try
             {
-                ulong rc = _helper.ejdb_get(db, collection, id, out jbl);
+                ulong rc;
+                using (var col = new Utf8String(collection))
+                {
+                    rc = _helper.ejdb_get(db, col, id, out jbl);
+                }
+
                 if (rc != 0)
                     throw _e.CreateException(rc);
 
-                var printer = new Printer(writer);
+                var printer = new Printer(stream);
 
                 rc = _helper.jbl_as_json(jbl, printer.JbnJsonPrinter, IntPtr.Zero,
                     pretty ? jbl_print_flags_t.JBL_PRINT_PRETTY : jbl_print_flags_t.JBL_PRINT_NONE);
@@ -176,7 +202,7 @@ namespace Ejdb2.Native
                 if (rc != 0)
                     throw _e.CreateException(rc);
 
-                writer.Flush();
+                stream.Flush();
             }
             finally
             {
@@ -196,8 +222,11 @@ namespace Ejdb2.Native
             if (targetFile == null)
                 throw new ArgumentNullException(nameof(targetFile));
 
-            ulong rc = _helper.ejdb_online_backup(handle.DangerousGetHandle(),
-                out ulong ts, targetFile);
+            ulong rc, ts;
+            using (var tf = new Utf8String(targetFile))
+            {
+                rc = _helper.ejdb_online_backup(handle.DangerousGetHandle(), out ts, tf);
+            }
 
             if (rc != 0)
                 throw _e.CreateException(rc);
@@ -216,7 +245,12 @@ namespace Ejdb2.Native
             if (collection == null)
                 throw new ArgumentNullException(nameof(collection));
 
-            ulong rc = _helper.ejdb_remove_collection(handle.DangerousGetHandle(), collection);
+            ulong rc;
+            using (var col = new Utf8String(collection))
+            {
+                rc = _helper.ejdb_remove_collection(handle.DangerousGetHandle(), col);
+            }
+
             if (rc != 0)
                 throw _e.CreateException(rc);
         }
@@ -240,19 +274,16 @@ namespace Ejdb2.Native
 
             try
             {
-                ulong rc = _helper.jbl_from_json(out jbl, json);
-                if (rc != 0)
-                    throw _e.CreateException(rc);
-
-                if (id > 0)
+                using (var pool = new Utf8StringPool())
                 {
-                    rc = _helper.ejdb_put(db, collection, jbl, id);
+                    ulong rc = _helper.jbl_from_json(out jbl, pool.GetString(json));
                     if (rc != 0)
                         throw _e.CreateException(rc);
-                }
-                else
-                {
-                    rc = _helper.ejdb_put_new(db, collection, jbl, out ret);
+
+                    rc = id > 0
+                        ? _helper.ejdb_put(db, pool.GetString(collection), jbl, id)
+                        : _helper.ejdb_put_new(db, pool.GetString(collection), jbl, out ret);
+
                     if (rc != 0)
                         throw _e.CreateException(rc);
                 }
@@ -277,13 +308,16 @@ namespace Ejdb2.Native
             return 0;
         }
 
-        public void GetInfo(EJDB2Handle handle, TextWriter writer, bool pretty)
+        public void GetInfo(EJDB2Handle handle, Stream stream, bool pretty)
         {
             if (handle.IsInvalid)
                 throw new ArgumentException("Invalid DB handle.");
 
             if (handle.IsClosed)
                 throw new ArgumentException("DB handle is closed.");
+
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
             IntPtr db = handle.DangerousGetHandle(), jbl = IntPtr.Zero;
 
@@ -293,7 +327,7 @@ namespace Ejdb2.Native
                 if (rc != 0)
                     throw _e.CreateException(rc);
 
-                var printer = new Printer(writer);
+                var printer = new Printer(stream);
 
                 rc = _helper.jbl_as_json(jbl, printer.JbnJsonPrinter, IntPtr.Zero,
                     pretty ? jbl_print_flags_t.JBL_PRINT_PRETTY : jbl_print_flags_t.JBL_PRINT_NONE);
@@ -301,7 +335,7 @@ namespace Ejdb2.Native
                 if (rc != 0)
                     throw _e.CreateException(rc);
 
-                writer.Flush();
+                stream.Flush();
             }
             finally
             {
@@ -324,7 +358,7 @@ namespace Ejdb2.Native
             return new EJDB2Facade(helper);
         }
 
-        private static EJDB_OPTS MapOptions(EJDB2Options options)
+        private static EJDB_OPTS MapOptions(EJDB2Options options, Utf8StringPool pool)
         {
             var result = new EJDB_OPTS();
 
@@ -334,7 +368,7 @@ namespace Ejdb2.Native
             result.kv.random_seed = options.IWKVOptions.RandomSeed;
             result.kv.oflags = options.IWKVOptions.OpenFlags;
             result.kv.file_lock_fail_fast = options.IWKVOptions.FileLockFailFast;
-            result.kv.path = options.IWKVOptions.Path;
+            result.kv.path = pool.GetString(options.IWKVOptions.Path);
             result.kv.wal.check_crc_on_checkpoint = options.IWKVOptions.WALOptions.CheckCRCOnCheckpoint;
             result.kv.wal.savepoint_timeout_sec = options.IWKVOptions.WALOptions.SavePointTimeoutSec;
             result.kv.wal.checkpoint_timeout_sec = options.IWKVOptions.WALOptions.CheckPointTimeoutSec;
@@ -353,19 +387,19 @@ namespace Ejdb2.Native
 
         private sealed class Printer
         {
-            private readonly TextWriter _writer;
+            private readonly Stream _stream;
 
-            public Printer(TextWriter writer)
+            public Printer(Stream stream)
             {
-                _writer = writer;
+                _stream = stream;
             }
 
-            public ulong JbnJsonPrinter(string data, int size, char ch, int count, IntPtr op)
+            public unsafe ulong JbnJsonPrinter(IntPtr data, int size, byte ch, int count, IntPtr op)
             {
-                if (data == null)
+                if (data == IntPtr.Zero)
                 {
                     for (int i = 0; i < count; ++i)
-                        _writer.Write(ch);
+                        _stream.WriteByte(ch);
                 }
                 else
                 {
@@ -373,7 +407,14 @@ namespace Ejdb2.Native
                         count = 1;
 
                     for (int i = 0; i < count; ++i)
-                        _writer.Write(data);
+                    {
+                        var len = Utf8String.StrLen(data);
+                        if (len > 0)
+                        {
+                            using (var ms = new UnmanagedMemoryStream((byte*)data, len))
+                                ms.CopyTo(_stream);
+                        }
+                    }
                 }
 
                 return 0;
