@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 
 namespace Ejdb2.Native
@@ -21,6 +22,13 @@ namespace Ejdb2.Native
 
         public override bool IsInvalid => handle == IntPtr.Zero;
 
-        protected override bool ReleaseHandle() => EJDB2Facade.Instance.Close(this) != 0;
+        [SecurityCritical]
+        protected override bool ReleaseHandle()
+        {
+            if (handle != IntPtr.Zero)
+                return EJDB2Facade.Instance.Close(this) != 0;
+            
+            return false;
+        }
     }
 }
