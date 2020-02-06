@@ -71,33 +71,37 @@ namespace Ejdb2.Examples
             long id = db.Put("c1", json);
             Assert(id == 1L);
 
-            var bos = new MemoryStream();
-            db.Get("c1", 1L, bos);
-            Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals(json));
-            bos.Dispose();
+            using (var bos = new MemoryStream())
+            {
+                db.Get("c1", 1L, bos);
+                Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals(json));
+            }
 
             db.Patch("c1", patch, id);
-            bos = new MemoryStream();
-            db.Get("c1", 1L, bos);
-            Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals("{'foo':'bar','baz':'qux'}".Replace('\'', '"')));
-            bos.Dispose();
-            bos = new MemoryStream();
+
+            using (var bos = new MemoryStream())
+            {
+                db.Get("c1", 1L, bos);
+                Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals("{'foo':'bar','baz':'qux'}".Replace('\'', '"')));
+            }
 
             db.Delete("c1", id);
 
-            exception = null;
-            try
+            using (var bos = new MemoryStream())
             {
-                db.Get("c1", id, bos);
-            }
-            catch (EJDB2Exception e)
-            {
-                exception = e;
-            }
+                exception = null;
+                try
+                {
+                    db.Get("c1", id, bos);
+                }
+                catch (EJDB2Exception e)
+                {
+                    exception = e;
+                }
 
-            Assert(exception != null);
-            Assert(exception.Message.Contains("IWKV_ERROR_NOTFOUND"));
-            bos.Dispose();
+                Assert(exception != null);
+                Assert(exception.Message.Contains("IWKV_ERROR_NOTFOUND"));
+            }
 
             // JQL resources can be closed explicitly or garbage collected
             JQL q = db.CreateQuery("@mycoll/*");
@@ -210,12 +214,13 @@ namespace Ejdb2.Examples
             Assert(json.Contains("\"collections\":[]"));
 
             // Test rename collection
-            bos = new MemoryStream();
-            db.Put("cc1", "{\"foo\": 1}");
-            db.RenameCollection("cc1", "cc2");
-            db.Get("cc2", 1, bos);
-            Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals("{\"foo\":1}"));
-            bos.Dispose();
+            using (var bos = new MemoryStream())
+            {
+                db.Put("cc1", "{\"foo\": 1}");
+                db.RenameCollection("cc1", "cc2");
+                db.Get("cc2", 1, bos);
+                Assert(Encoding.UTF8.GetString(bos.ToArray()).Equals("{\"foo\":1}"));
+            }
 
             // Check limit
             q = db.CreateQuery("@mycoll/* | limit 2 skip 3");
