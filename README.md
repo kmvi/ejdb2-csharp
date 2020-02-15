@@ -4,7 +4,7 @@ Embeddable JSON Database engine http://ejdb.org .NET binding (.NET Standard 2.0)
 
 See https://github.com/Softmotions/ejdb/blob/master/README.md
 
-For API usage examples take a look into [examples project](https://github.com/kmvi/ejdb2-csharp/blob/master/examples/Program.cs).
+For API usage examples take a look into [examples](https://github.com/kmvi/ejdb2-csharp/blob/master/examples/Program.cs) and [tests](https://github.com/kmvi/ejdb2-csharp/tree/master/tests).
 
 ## Minimal example
 
@@ -32,8 +32,8 @@ static void Main(string[] args)
 
 ## Supported platforms
 
-* Windows x64
 * Linux x64
+* Windows x64
 
 ## How to build it manually
 
