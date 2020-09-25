@@ -56,7 +56,7 @@ namespace Ejdb2.Tests
         {
             using var db = CreateTestDb();
             var e = Assert.Throws<EJDB2Exception>(() => db.Get("c1", 1));
-            Assert.Contains("IWKV_ERROR_NOTFOUND", e.Message);
+            Assert.Contains("IW_ERROR_NOT_EXISTS", e.Message);
         }
 
         [Fact]
