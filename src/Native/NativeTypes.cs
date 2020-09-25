@@ -44,6 +44,7 @@ namespace Ejdb2.Native
     {
         public IntPtr path;
         public uint random_seed;
+        public int fmt_version;
         public iwkv_openflags oflags;
         public bool file_lock_fail_fast;
         public IWKV_WAL_OPTS wal;
