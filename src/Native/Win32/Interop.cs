@@ -38,7 +38,7 @@ namespace Ejdb2.Native.Win32
             IntPtr jbl, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong jbl_node_as_json(
+        public static extern ulong jbn_as_json(
             IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
@@ -141,7 +141,7 @@ namespace Ejdb2.Native.Win32
             IntPtr placeholder, int index);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong jbl_node_from_json(IntPtr json,
+        public static extern ulong jbn_from_json(IntPtr json,
             [Out] out JBL_NODE node, [In] ref IntPtr pool);
 
         [DllImport(EjdbLibName, CallingConvention = CallingConvention.Cdecl)]

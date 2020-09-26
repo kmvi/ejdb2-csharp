@@ -70,9 +70,9 @@ namespace Ejdb2.Native.Linux
 
         public ulong jbl_from_json(out IntPtr jblp, IntPtr jsonstr) => Interop.jbl_from_json(out jblp, jsonstr);
 
-        public ulong jbl_node_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf) => Interop.jbl_node_as_json(node, pt, op, pf);
+        public ulong jbn_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf) => Interop.jbn_as_json(node, pt, op, pf);
 
-        public ulong jbl_node_from_json(IntPtr json, out JBL_NODE node, ref IntPtr pool) => Interop.jbl_node_from_json(json, out node, ref pool);
+        public ulong jbn_from_json(IntPtr json, out JBL_NODE node, ref IntPtr pool) => Interop.jbn_from_json(json, out node, ref pool);
 
         public UIntPtr jbl_size(IntPtr jbl) => Interop.jbl_size(jbl);
 

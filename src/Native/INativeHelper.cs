@@ -12,7 +12,7 @@ namespace Ejdb2.Native
         ulong ejdb_get_meta(IntPtr handle, out IntPtr jblp);
         ulong jbl_from_json(out IntPtr jblp, IntPtr jsonstr);
         ulong jbl_as_json(IntPtr jbl, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
-        ulong jbl_node_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
+        ulong jbn_as_json(IntPtr node, jbl_json_printer pt, IntPtr op, jbl_print_flags_t pf);
         ulong jbl_xstr_json_printer(IntPtr data, int size, byte ch, int count, IntPtr op);
         ulong ejdb_put(IntPtr db, IntPtr coll, IntPtr jbl, long id);
         ulong ejdb_put_new(IntPtr db, IntPtr coll, IntPtr jbl, out long oid);
@@ -40,7 +40,7 @@ namespace Ejdb2.Native
         ulong jql_set_f64(IntPtr q, IntPtr placeholder, int index, double val);
         ulong jql_set_bool(IntPtr q, IntPtr placeholder, int index, bool val);
         ulong jql_set_null(IntPtr q, IntPtr placeholder, int index);
-        ulong jbl_node_from_json(IntPtr json, out JBL_NODE node, ref IntPtr pool);
+        ulong jbn_from_json(IntPtr json, out JBL_NODE node, ref IntPtr pool);
         ulong ejdb_exec(ref EJDB_EXEC ux);
         UIntPtr jbl_size(IntPtr jbl);
         int ejdb_version_major();

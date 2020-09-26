@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
-using Ejdb2.Native.Win32;
 
 namespace Ejdb2.Native
 {

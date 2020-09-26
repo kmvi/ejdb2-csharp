@@ -120,7 +120,7 @@ namespace Ejdb2.Native
 
                     using (var spool = new Utf8StringPool())
                     {
-                        ulong rc = _helper.jbl_node_from_json(spool.GetString(val), out JBL_NODE node, ref pool);
+                        ulong rc = _helper.jbn_from_json(spool.GetString(val), out JBL_NODE node, ref pool);
                         if (rc != 0)
                             throw _e.CreateException(rc);
 
@@ -434,22 +434,14 @@ namespace Ejdb2.Native
                     if (xstr == IntPtr.Zero)
                         throw new InvalidOperationException("iwxstr_new2 failed.");
 
-                    if (doc.node != IntPtr.Zero)
-                    {
-                        rc = _helper.jbl_node_as_json(doc.node, _helper.jbl_xstr_json_printer,
+                    rc = doc.node != IntPtr.Zero
+                        ? _helper.jbn_as_json(doc.node, _helper.jbl_xstr_json_printer,
+                            xstr, jbl_print_flags_t.JBL_PRINT_NONE)
+                        : _helper.jbl_as_json(doc.raw, _helper.jbl_xstr_json_printer,
                             xstr, jbl_print_flags_t.JBL_PRINT_NONE);
 
-                        if (rc != 0)
-                            throw _e.CreateException(rc);
-                    }
-                    else
-                    {
-                        rc = _helper.jbl_as_json(doc.raw, _helper.jbl_xstr_json_printer,
-                            xstr, jbl_print_flags_t.JBL_PRINT_NONE);
-                        
-                        if (rc != 0)
-                            throw _e.CreateException(rc);
-                    }
+                    if (rc != 0)
+                        throw _e.CreateException(rc);
 
                     string json = Utf8String.FromIntPtr(_helper.iwxstr_ptr(xstr));
                     long llv = _callback(doc.id, json);
