@@ -47,6 +47,10 @@ namespace Ejdb2
 
         internal EJDB2Handle Handle => _handle.Value;
 
+        public event EventHandler<NextRecordEventArgs> OnNextRecord;
+
+        public event EventHandler<EventArgs> OnCompleted;
+
         /// <summary>
         /// Owner database instance
         /// </summary>
@@ -271,7 +275,9 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
-            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, null, _explainLog);
+            JQLFacade.Instance.Execute(Db.Handle, _handle.Value,
+                _skip, _limit, OnNextRecordCallback, _explainLog);
+            OnCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -282,8 +288,10 @@ namespace Ejdb2
         public void Execute(JQLCallback cb)
         {
             EnsureNotDisposed();
-            _explainLog = _explain ? new StringWriter() : null;
-            JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, cb, _explainLog);
+            var handler = new JQLCallbackHandler(cb);
+            OnNextRecord += handler.Handler;
+            Execute();
+            OnNextRecord -= handler.Handler;
         }
 
         /// <summary>
@@ -295,7 +303,7 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
-            var cb = new JQLCallbackWrapper();
+            var cb = new JQLFirstCallbackWrapper();
             JQLFacade.Instance.Execute(Db.Handle, _handle.Value, _skip, _limit, cb.Callback, _explainLog);
             return new KeyValuePair<long, string>(cb.Id, cb.Json);
         }
@@ -324,7 +332,8 @@ namespace Ejdb2
         {
             EnsureNotDisposed();
             _explainLog = _explain ? new StringWriter() : null;
-            return JQLFacade.Instance.ExecuteScalarInt64(Db.Handle, _handle.Value, _skip, _limit, _explainLog);
+            return JQLFacade.Instance.ExecuteScalarInt64(Db.Handle,
+                _handle.Value, _skip, _limit, _explainLog);
         }
 
         /// <summary>
@@ -378,7 +387,29 @@ namespace Ejdb2
                 throw new ObjectDisposedException(GetType().FullName);
         }
 
-        private sealed class JQLCallbackWrapper
+        private uint OnNextRecordCallback(long id, string json)
+        {
+            var args = new NextRecordEventArgs(id, json);
+            OnNextRecord?.Invoke(this, args);
+            return args.MoveTo;
+        }
+
+        private sealed class JQLCallbackHandler
+        {
+            private readonly JQLCallback _callback;
+
+            public JQLCallbackHandler(JQLCallback callback)
+            {
+                _callback = callback;
+            }
+
+            public void Handler(object sender, NextRecordEventArgs e)
+            {
+                e.MoveTo = _callback?.Invoke(e.Id, e.Json) ?? 1;
+            }
+        }
+
+        private sealed class JQLFirstCallbackWrapper
         {
             public long Id;
             public string Json;

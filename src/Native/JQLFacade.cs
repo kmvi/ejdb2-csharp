@@ -322,26 +322,6 @@ namespace Ejdb2.Native
             }
         }
 
-        public void Reset(EJDB2Handle jql)
-        {
-            if (jql.IsInvalid)
-                throw new ArgumentException("Invalid JQL handle.");
-
-            if (jql.IsClosed)
-                throw new ArgumentException("JQL handle is closed.");
-
-            _helper.jql_reset(jql.DangerousGetHandle(), true, true);
-        }
-
-        public void Destroy(EJDB2Handle handle)
-        {
-            if (!handle.IsInvalid)
-            {
-                IntPtr jql = handle.DangerousGetHandle();
-                _helper.jql_destroy(ref jql);
-            }
-        }
-
         public long ExecuteScalarInt64(EJDB2Handle db, EJDB2Handle jql,
             long skip, long limit, StringWriter explain)
         {
@@ -395,6 +375,26 @@ namespace Ejdb2.Native
             {
                 if (log != IntPtr.Zero)
                     _helper.iwxstr_destroy(log);
+            }
+        }
+
+        public void Reset(EJDB2Handle jql)
+        {
+            if (jql.IsInvalid)
+                throw new ArgumentException("Invalid JQL handle.");
+
+            if (jql.IsClosed)
+                throw new ArgumentException("JQL handle is closed.");
+
+            _helper.jql_reset(jql.DangerousGetHandle(), true, true);
+        }
+
+        public void Destroy(EJDB2Handle handle)
+        {
+            if (!handle.IsInvalid)
+            {
+                IntPtr jql = handle.DangerousGetHandle();
+                _helper.jql_destroy(ref jql);
             }
         }
 

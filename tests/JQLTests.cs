@@ -47,6 +47,23 @@ namespace Ejdb2.Tests
         }
 
         [Fact]
+        public void ExecuteEvents_Test()
+        {
+            using var db = CreateTestDb();
+
+            db.Put("mycoll", @"{""foo"":""baz""}");
+            using var query = db.CreateQuery("@mycoll/*");
+
+            query.OnNextRecord += (_, e) =>
+            {
+                Assert.True(e.Id > 0);
+                Assert.NotNull(e.Json);
+            };
+
+            query.Execute();
+        }
+
+        [Fact]
         public void Execute_Test2()
         {
             using var db = CreateTestDb();
@@ -65,6 +82,49 @@ namespace Ejdb2.Tests
             Assert.Equal(2, results.Count);
             Assert.Equal("{\"foo\":\"bar\"}", results[1L]);
             Assert.Equal("{\"foo\":\"baz\"}", results[2L]);
+        }
+
+        [Fact]
+        public void ExecuteEvents_Test2()
+        {
+            using var db = CreateTestDb();
+
+            db.Put("mycoll", @"{""foo"":""bar""}");
+            db.Put("mycoll", @"{""foo"":""baz""}");
+            using var query = db.CreateQuery("@mycoll/*");
+
+            var results = new Dictionary<long, string>();
+            query.OnNextRecord += (_, e) => results.Add(e.Id, e.Json);
+
+            query.Execute();
+
+            Assert.Equal(2, results.Count);
+            Assert.Equal("{\"foo\":\"bar\"}", results[1L]);
+            Assert.Equal("{\"foo\":\"baz\"}", results[2L]);
+        }
+
+        [Fact]
+        public void ExecuteEvents_Test3()
+        {
+            using var db = CreateTestDb();
+
+            db.Put("mycoll", @"{""foo"":""baz""}");
+            using var query = db.CreateQuery("@mycoll/*");
+
+            bool completed = false;
+
+            query.OnNextRecord += (_, e) =>
+            {
+                Assert.True(e.Id > 0);
+                Assert.NotNull(e.Json);
+                Assert.False(completed);
+            };
+
+            query.OnCompleted += (_, e) => { completed = true; };
+
+            query.Execute();
+
+            Assert.True(completed);
         }
 
         [Fact]
@@ -87,6 +147,22 @@ namespace Ejdb2.Tests
         }
 
         [Fact]
+        public void SetStringEvents_Test()
+        {
+            using var db = CreateTestDb();
+
+            db.Put("mycoll", @"{""foo"":""bar""}");
+            db.Put("mycoll", @"{""foo"":""baz""}");
+            using var query = db.CreateQuery("/[foo=:?]", "mycoll").SetString(0, "zaz");
+
+            var results = new Dictionary<long, string>();
+            query.OnNextRecord += (_, e) => { results.Add(e.Id, e.Json); };
+            query.Execute();
+
+            Assert.Empty(results);
+        }
+
+        [Fact]
         public void SetString_Test2()
         {
             using var db = CreateTestDb();
@@ -101,6 +177,23 @@ namespace Ejdb2.Tests
                 results.Add(docId, doc);
                 return 1;
             });
+
+            Assert.Single(results);
+            Assert.Equal("{\"foo\":\"bar\"}", results[1L]);
+        }
+
+        [Fact]
+        public void SetStringEvents_Test2()
+        {
+            using var db = CreateTestDb();
+
+            db.Put("mycoll", @"{""foo"":""bar""}");
+            db.Put("mycoll", @"{""foo"":""baz""}");
+            using var query = db.CreateQuery("/[foo=:val]", "mycoll").SetString("val", "bar");
+
+            var results = new Dictionary<long, string>();
+            query.OnNextRecord += (_, e) => { results.Add(e.Id, e.Json); };
+            query.Execute();
 
             Assert.Single(results);
             Assert.Equal("{\"foo\":\"bar\"}", results[1L]);
