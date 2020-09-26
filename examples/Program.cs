@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Ejdb2;
 using static System.Diagnostics.Debug;
 
@@ -10,7 +11,7 @@ namespace Ejdb2.Examples
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             if (File.Exists("example.db"))
                 File.Delete("example.db");
@@ -41,6 +42,12 @@ namespace Ejdb2.Examples
                     Console.WriteLine("Found {0}: {1}", docId, doc);
                     return 1;
                 });
+
+            var query = db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3);
+            await foreach (var (docId, doc) in query.ToAsyncEnumerable())
+            {
+                Console.WriteLine("Found {0}: {1}", docId, doc);
+            }
         }
     }
 }

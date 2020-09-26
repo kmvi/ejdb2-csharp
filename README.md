@@ -27,6 +27,13 @@ static void Main(string[] args)
             Console.WriteLine("Found {0}: {1}", docId, doc);
             return 1;
         });
+        
+    // see also JQLExtensions in examples project
+    var query = db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3);
+    await foreach (var (docId, doc) in query.ToAsyncEnumerable())
+    {
+        Console.WriteLine("Found {0}: {1}", docId, doc);
+    }
 }
 ```
 
