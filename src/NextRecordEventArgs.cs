@@ -16,5 +16,11 @@ namespace Ejdb2
         public long Id { get; }
         public string Json { get; }
         public uint MoveTo { get; set; }
+
+        public void Deconstruct(out long id, out string json)
+        {
+            id = Id;
+            json = Json;
+        }
     }
 }
