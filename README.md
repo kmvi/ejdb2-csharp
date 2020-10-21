@@ -9,7 +9,7 @@ For API usage examples take a look into [examples](https://github.com/kmvi/ejdb2
 ## Minimal example
 
 ``` csharp
-static void Main(string[] args)
+static async Task Main(string[] args)
 {
     var options = new EJDB2OptionsBuilder("example.db")
         .Truncate().GetOptions();
