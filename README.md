@@ -9,31 +9,28 @@ For API usage examples take a look into [examples](https://github.com/kmvi/ejdb2
 ## Minimal example
 
 ``` csharp
-static async Task Main(string[] args)
-{
-    var options = new EJDB2OptionsBuilder("example.db")
-        .Truncate().GetOptions();
+var options = new EJDB2OptionsBuilder("example.db")
+    .Truncate().GetOptions();
 
-    using var db = new EJDB2(options);
+using var db = new EJDB2(options);
 
-    long id = db.Put("parrots", "{\"name\":\"Bianca\", \"age\": 4}");
-    Console.WriteLine("Bianca record: {0}", id);
+long id = db.Put("parrots", "{\"name\":\"Bianca\", \"age\": 4}");
+Console.WriteLine("Bianca record: {0}", id);
 
-    id = db.Put("parrots", "{\"name\":\"Darko\", \"age\": 8}");
-    Console.WriteLine("Darko record: {0}", id);
-    
-    db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3)
-        .Execute((docId, doc) => {
-            Console.WriteLine("Found {0}: {1}", docId, doc);
-            return 1;
-        });
-        
-    // see also JQLExtensions in examples project
-    var query = db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3);
-    await foreach (var (docId, doc) in query.ToAsyncEnumerable())
-    {
+id = db.Put("parrots", "{\"name\":\"Darko\", \"age\": 8}");
+Console.WriteLine("Darko record: {0}", id);
+
+db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3)
+    .Execute((docId, doc) => {
         Console.WriteLine("Found {0}: {1}", docId, doc);
-    }
+        return 1;
+    });
+    
+// see also JQLExtensions in examples project
+var query = db.CreateQuery("@parrots/[age > :age]").SetLong("age", 3);
+await foreach (var (docId, doc) in query.ToAsyncEnumerable())
+{
+    Console.WriteLine("Found {0}: {1}", docId, doc);
 }
 ```
 
@@ -94,7 +91,7 @@ dotnet build
 
 ## Run example
 
-Windows only: copy `libejdb2.dll` and `libiowow.dll` in `examples\bin\{Configuration}\netcoreapp3.1` directory.
+Windows only: copy `libejdb2.dll` and `libiowow.dll` in `examples\bin\{Configuration}\net5.0` directory.
 
 ``` cmd
 cd examples
@@ -103,7 +100,7 @@ dotnet run
 
 ## Run tests
 
-Windows only: copy `libejdb2.dll` and `libiowow.dll` in `tests\bin\{Configuration}\netcoreapp3.1` directory.
+Windows only: copy `libejdb2.dll` and `libiowow.dll` in `tests\bin\{Configuration}\net5.0` directory.
 
 ``` cmd
 cd tests
