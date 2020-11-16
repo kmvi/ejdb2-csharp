@@ -17,7 +17,7 @@ namespace Ejdb2
             _query = query;
         }
 
-        public IAsyncEnumerable<(long Id, string Json)> Execute(CancellationToken token)
+        public IAsyncEnumerable<(long Id, string Json)> Execute(CancellationToken token = default)
         {
             _query.OnNextRecord += OnNextRecord;
             _query.OnCompleted += OnComplete;
